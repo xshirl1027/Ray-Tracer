@@ -177,6 +177,27 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
+  *lambda = -(ray->p0->pz)/(ray->d->pz);
+
+  if(*lambda < 0 || ray->d->pz == 0)
+  {
+    *lambda = 0;
+    *p = NULL;
+  }
+  else
+  {
+    ray->rayPos(ray, lambda, p);
+    n->px = 0;
+    n->py = 1;
+    n->pz = 0;
+    n->pw = 1;
+
+    if (p->px >= -1 && p->px <= 1 && p->pz >= -1 && p->pz <= 1)
+    {
+      matVecMult(plane->T,p);
+      matVecMult(plane->Tinv,n);
+    }
+  }
 }
 
 void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)

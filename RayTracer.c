@@ -25,6 +25,9 @@
 struct object3D *object_list;
 struct pointLS *light_list;
 int MAX_DEPTH;
+int object_list_size = 0;
+
+
 
 void buildScene(void)
 {
@@ -77,7 +80,9 @@ void buildScene(void)
  invert(&o->T[0][0],&o->Tinv[0][0]);		// Very important! compute
 						// and store the inverse
 						// transform for this object!
- insertObject(o,&object_list);			// Insert into object list
+ insertObject
+ (o,&object_list);			// Insert into object list
+ object_list_size += 1;
 
  // Let's add a couple spheres
  o=newSphere(.05,.95,.35,.35,1,.25,.25,1,1,6);
@@ -86,6 +91,7 @@ void buildScene(void)
  Translate(o,-1.45,1.1,3.5);
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
+ object_list_size += 1;
 
  o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,6);
  Scale(o,.5,2.0,1.0);
@@ -93,6 +99,7 @@ void buildScene(void)
  Translate(o,1.75,1.25,5.0);
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
+ object_list_size += 1;
 
  // Insert a single point light source.
  p.px=0;
@@ -175,6 +182,18 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  // TO DO: Implement this function. See the notes for
  // reference of what to do in here
  /////////////////////////////////////////////////////////////
+  double min_dist = 1/0;
+  double curr_len = 0;
+
+  for (int i=0; i < object_list_size; i++)
+  {
+    *obj[i]->*intersect(*obj[i], ray, lambda, p, n, a, b);
+    curr_len = length(p);
+    if (min_dist > curr_len && curr_len > 0){
+      min_dist = curr_len;
+    }
+  }
+
 
 }
 
