@@ -21,6 +21,24 @@
 #ifndef __utils_header
 #define __utils_header
 
+// Function to find the maximum between two doubles
+inline void max(double a, double b)
+{
+  if(a > b)
+    return a;
+  else
+    return b;
+}
+
+// Function to find the minimum between two doubles
+inline void min(double a, double b)
+{
+  if(a < b)
+    return a;
+  else
+    return b;
+}
+
 // Functions to apply transformations to objects.
 // If you add any transformations to the list below, document them carefully
 inline void matMult(double A[4][4], double B[4][4])

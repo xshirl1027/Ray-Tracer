@@ -19,6 +19,9 @@
 */
 
 #include "utils.h"
+#ifndef max
+  #define max(a,b) ((a) > (b) ? (a) : (b))
+#endif
 
 // A couple of global structures and data: An object list, a light list, and the
 // maximum recursion depth
@@ -160,8 +163,35 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  // details about the shading model.
  //////////////////////////////////////////////////////////////
 
+ struct point3D L, R, V;
+ double ka, kd, ks, alpha;
+ 
+ memcpy(*light_list.p0, &L, sizeof(point3D);
+ subVectors(p,&L);
+ normalize(&L);
+ normalize(n);
+ 
+
+ double comp = dot(&L,n);
+ R->px = 2*comp*(n->px);
+ R->py = 2*comp*(n->py);
+ R->pz = 2*comp*(n->pz);
+ R->pw = 2*comp*(n->pw);
+ subVectors(&L,&R);
+ R->px = (-1)*(R->px);
+ R->py = (-1)*(R->py);
+ R->pz = (-1)*(R->pz);
+ R->pw = (-1)*(R->pw);
+
+ V->px =  0-(p->px); //camera position is hard-coded to be (0,0,-3)
+ V->py =  0-(p->py);
+ V->pz = -3-(p->pz);
+ V->pw =  1;
+
  // Be sure to update 'col' with the final colour computed here!
- return;
+ col->R = ka*R + kd*max(0.0, comp)*R + ks*max(0.0, dot(&V,&R)**alpha)*R;
+ col->G = ka*G + kd*max(0.0, comp)*G + ks*max(0.0, dot(&V,&R)**alpha)*G;
+ col->B = ka*B + kd*max(0.0, comp)*B + ks*max(0.0, dot(&V,&R)**alpha)*B;
 
 }
 
