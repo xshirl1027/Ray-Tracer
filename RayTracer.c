@@ -254,8 +254,10 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	  col->G=-1;
 	  col->B=-1;
 	  return;
+	 }else{
+		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
+		
 	 }
-	 findFirstHit(ray, &lambda, Os, obj, &p, &n, &a, &b);
 	 
 
 	
