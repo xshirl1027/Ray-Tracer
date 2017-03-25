@@ -21,6 +21,7 @@
 #include "utils.h"
 #define HEIGHT 1000
 #define WIDTH 1000
+#define max(A,B) ((A)<(B)?(B):(A))
 // A couple of global structures and data: An object list, a light list, and the
 // maximum recursion depth
 struct object3D *object_list;
@@ -161,38 +162,57 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  // details about the shading model.
  //////////////////////////////////////////////////////////////
 
- struct point3D L, R, V;
- 
- memcpy(*light_list.p0, &L, sizeof(point3D)); // index through light list later!!!
- subVectors(p,&L);
- L->px = (-1)*(L->px);
- L->py = (-1)*(L->py);
- L->pz = (-1)*(L->pz);
- L->pw = (-1)*(L->pw);
- normalize(&L);
+ struct point3D *Lv;
+ struct point3D *Rv;
+ struct point3D *Vv;
+ Lv = (struct point3D*)malloc(sizeof(struct point3D));
+ Rv = (struct point3D*)malloc(sizeof(struct point3D));
+ Vv = (struct point3D*)malloc(sizeof(struct point3D));
+
+ memcpy(&light_list->p0, Lv, sizeof(struct point3D)); // index through light list later!!!
+ subVectors(p,Lv);
+ Lv->px = (-1)*(Lv->px);
+ Lv->py = (-1)*(Lv->py);
+ Lv->pz = (-1)*(Lv->pz);
+ Lv->pw = (-1)*(Lv->pw);
+ normalize(Lv);
  normalize(n);
 
- double comp = dot(&L,n);
- R->px = 2*comp*(n->px);
- R->py = 2*comp*(n->py);
- R->pz = 2*comp*(n->pz);
- R->pw = 2*comp*(n->pw);
- subVectors(&L,&R);
- R->px = (-1)*(R->px);
- R->py = (-1)*(R->py);
- R->pz = (-1)*(R->pz);
- R->pw = (-1)*(R->pw);
+ double comp = dot(Lv,n);
+ Rv->px = 2*comp*(n->px);
+ Rv->py = 2*comp*(n->py);
+ Rv->pz = 2*comp*(n->pz);
+ Rv->pw = 2*comp*(n->pw);
+ subVectors(Lv,Rv);
+ Rv->px = (-1)*(Rv->px);
+ Rv->py = (-1)*(Rv->py);
+ Rv->pz = (-1)*(Rv->pz);
+ Rv->pw = (-1)*(Rv->pw);
+ normalize(Rv);
+ Vv->px = (ray->p0.px)-(p->px); 
+ Vv->py = (ray->p0.py)-(p->py);
+ Vv->pz = (ray->p0.pz)-(p->pz);
+ Vv->pw = (ray->p0.pw)-(p->pw);
+ normalize(Vv);
 
- V->px = (ray->p0.px)-(p->px); 
- V->py = (ray->p0.py)-(p->py);
- V->pz = (ray->p0.pz)-(p->pz);
- V->pw = (ray->p0.pw)-(p->pw);
+ double ambR, ambG, ambB, difR, difG, difB, spcR, spcG, spcB;
+
+ ambR = (obj->alb.ra)*(R);
+ ambG = (obj->alb.ra)*(G);
+ ambB = (obj->alb.ra)*(B);
+
+ difR = (obj->alb.rd)*(max(0.0, comp))*(R);
+ difG = (obj->alb.rd)*(max(0.0, comp))*(G);
+ difB = (obj->alb.rd)*(max(0.0, comp))*(B);
+
+ spcR = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(R);
+ spcG = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(G);
+ spcB = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(B);
 
  // Be sure to update 'col' with the final colour computed here!
- col->R = obj->alb.ra*R + obj->alb.rd*max(0.0, comp)*R + obj->alb.rs*max(0.0, dot(&V,&R)**obj->shinyness)*R;
- col->G = obj->alb.ra*G + obj->alb.rd*max(0.0, comp)*G + obj->alb.rs*max(0.0, dot(&V,&R)**obj->shinyness)*G;
- col->B = obj->alb.ra*B + obj->alb.rd*max(0.0, comp)*B + obj->alb.rs*max(0.0, dot(&V,&R)**obj->shinyness)*B;
-
+ col->R = (obj->alb.rg)*(ambR + difR + spcR);
+ col->G = (obj->alb.rg)*(ambG + difG + spcG);
+ col->B = (obj->alb.rg)*(ambB + difB + spcB);
 }
 
 void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct object3D **obj, struct point3D *p, struct point3D *n, double *a, double *b)
@@ -212,16 +232,20 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  // TO DO: Implement this function. See the notes for
  // reference of what to do in here
  /////////////////////////////////////////////////////////////
-  double min_dist = 1/0;
+  double min_dist = 1.0/0.0;
   double curr_len = 0;
 
-  for (int i=0; i < object_list_size; i++)
+  struct object3D *curr_obj;
+  curr_obj = object_list;
+  
+  while (curr_obj != NULL)
   {
-    *object_list[i]->*intersect(*object_list[i], ray, lambda, p, n, a, b);
+    curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
     curr_len = length(p);
     if (min_dist > curr_len && curr_len > 0){
       min_dist = curr_len;
     }
+    curr_obj = curr_obj->next;
   }
 
 
@@ -244,8 +268,8 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	 double lambda;		// Lambda at intersection
 	 double a,b;		// Texture coordinates
 	 struct object3D *obj;	// Pointer to object at intersection
-	 struct point3D p;	// Intersection point
-	 struct point3D n;	// Normal at intersection
+	 struct point3D p, tp;	// Intersection point
+	 struct point3D n, tn;	// Normal at intersection
 	 struct colourRGB I;	// Colour returned by shading function
 
 	 if (depth>MAX_DEPTH)	// Max recursion depth reached. Return invalid colour.
@@ -256,6 +280,34 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	  return;
 	 }else{
 		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
+		struct ray3D lightray;
+		struct point3D dir;
+		if(&p != NULL)
+		{	
+			struct pointLS *curr_light = light_list;
+			while (curr_light!=NULL && curr_light->next!= NULL)
+			{
+				memcpy(&dir, &curr_light->p0, sizeof(struct point3D));
+				subVectors(&p, &dir);
+				lightray = *(newRay(&p, &dir));
+				normalize(&(lightray.d));
+				findFirstHit(&lightray, &lambda, Os, &obj, &tp, &tn, &a, &b);
+				if(&tp == NULL){
+					rtShade(obj, &p, &n, ray, depth, a, b, &I);
+					
+					col->R += I.R;
+					col->G += I.G;
+					col->B += I.B;
+				}
+				curr_light = curr_light->next;
+			}
+
+			//if(depth>0){
+				//create reflected ray
+				//rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object3D *Os)
+
+			//}
+		}
 		
 	 }
 	 
@@ -416,18 +468,18 @@ int main(int argc, char *argv[])
 		// TO DO - complete the code that should be in this loop to do the
 		//         raytracing!
 		///////////////////////////////////////////////////////////////////
-		point3D origin = newPoint(0.0,0.0,0.0);
-		point3D imagePlane = newPoint((-sx/2 + i + 0.5), (-sx/2 + j + 0.5), -1);
+		struct point3D origin = *(newPoint(0.0,0.0,0.0));
+		struct point3D imagePlane = *(newPoint((-sx/2 + i + 0.5), (-sx/2 + j + 0.5), -1));
 
-		point3D rayDirection;
-		memcpy(&rayDirection, &origin, sizeof(point3D);
+		struct point3D rayDirection;
+		memcpy(&rayDirection, &origin, sizeof(struct point3D));
 		subVectors(&imagePlane, &rayDirection);
 
 		matVecMult(cam->C2W, &rayDirection);
 		matVecMult(cam->C2W, &origin);
 		ray = newRay(&origin, &rayDirection);
 
-		rayTrace(ray, MAX_DEPTH, &col, struct object3D *Os)
+		rayTrace(ray, MAX_DEPTH, &col, NULL);
 
 
 	  } // end for i

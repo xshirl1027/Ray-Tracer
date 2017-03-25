@@ -1,0 +1,147 @@
+RayTracer.c: In function 'void rtShade(object3D*, point3D*, point3D*, ray3D*, int, double, double, colourRGB*)':
+RayTracer.c:167:36: error: invalid conversion from 'void*' to 'point3D*' [-fpermissive]
+  Lv = malloc(sizeof(struct point3D));
+                                    ^
+RayTracer.c:168:36: error: invalid conversion from 'void*' to 'point3D*' [-fpermissive]
+  Rv = malloc(sizeof(struct point3D));
+                                    ^
+RayTracer.c:169:36: error: invalid conversion from 'void*' to 'point3D*' [-fpermissive]
+  Vv = malloc(sizeof(struct point3D));
+                                    ^
+RayTracer.c:171:21: error: request for member 'p0' in 'light_list', which is of pointer type 'pointLS*' (maybe you meant to use '->' ?)
+  memcpy(*light_list.p0, Lv, sizeof(point3D)); // index through light list later!!!
+                     ^
+In file included from utils.h:19:0,
+                 from RayTracer.c:21:
+RayTracer.c:197:108: error: invalid type argument of unary '*' (have 'double')
+  col->R = obj->alb.rg(obj->alb.ra*R + obj->alb.rd*max(0.0, comp)*R + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*R);
+                                                                                                            ^
+svdDynamic.h:20:24: note: in definition of macro 'max'
+ #define max(A,B) ((A)<(B)?(B):(A))
+                        ^
+RayTracer.c:197:108: error: invalid type argument of unary '*' (have 'double')
+  col->R = obj->alb.rg(obj->alb.ra*R + obj->alb.rd*max(0.0, comp)*R + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*R);
+                                                                                                            ^
+svdDynamic.h:20:28: note: in definition of macro 'max'
+ #define max(A,B) ((A)<(B)?(B):(A))
+                            ^
+RayTracer.c:197:120: error: expression cannot be used as a function
+  col->R = obj->alb.rg(obj->alb.ra*R + obj->alb.rd*max(0.0, comp)*R + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*R);
+                                                                                                                        ^
+In file included from utils.h:19:0,
+                 from RayTracer.c:21:
+RayTracer.c:198:108: error: invalid type argument of unary '*' (have 'double')
+  col->G = obj->alb.rg(obj->alb.ra*G + obj->alb.rd*max(0.0, comp)*G + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*G);
+                                                                                                            ^
+svdDynamic.h:20:24: note: in definition of macro 'max'
+ #define max(A,B) ((A)<(B)?(B):(A))
+                        ^
+RayTracer.c:198:108: error: invalid type argument of unary '*' (have 'double')
+  col->G = obj->alb.rg(obj->alb.ra*G + obj->alb.rd*max(0.0, comp)*G + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*G);
+                                                                                                            ^
+svdDynamic.h:20:28: note: in definition of macro 'max'
+ #define max(A,B) ((A)<(B)?(B):(A))
+                            ^
+RayTracer.c:198:120: error: expression cannot be used as a function
+  col->G = obj->alb.rg(obj->alb.ra*G + obj->alb.rd*max(0.0, comp)*G + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*G);
+                                                                                                                        ^
+In file included from utils.h:19:0,
+                 from RayTracer.c:21:
+RayTracer.c:199:108: error: invalid type argument of unary '*' (have 'double')
+  col->B = obj->alb.rg(obj->alb.ra*B + obj->alb.rd*max(0.0, comp)*B + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*B);
+                                                                                                            ^
+svdDynamic.h:20:24: note: in definition of macro 'max'
+ #define max(A,B) ((A)<(B)?(B):(A))
+                        ^
+RayTracer.c:199:108: error: invalid type argument of unary '*' (have 'double')
+  col->B = obj->alb.rg(obj->alb.ra*B + obj->alb.rd*max(0.0, comp)*B + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*B);
+                                                                                                            ^
+svdDynamic.h:20:28: note: in definition of macro 'max'
+ #define max(A,B) ((A)<(B)?(B):(A))
+                            ^
+RayTracer.c:199:120: error: expression cannot be used as a function
+  col->B = obj->alb.rg(obj->alb.ra*B + obj->alb.rd*max(0.0, comp)*B + obj->alb.rs*max(0.0, dot(Vv,Rv)**obj->shinyness)*B);
+                                                                                                                        ^
+RayTracer.c: In function 'void findFirstHit(ray3D*, double*, object3D*, object3D**, point3D*, point3D*, double*, double*)':
+RayTracer.c:219:23: warning: division by zero [-Wdiv-by-zero]
+   double min_dist = 1/0;
+                       ^
+RayTracer.c:224:5: error: no match for 'operator*' (operand type is 'object3D')
+     *object_list[i]->*intersect(*object_list[i], ray, lambda, p, n, a, b);
+     ^
+RayTracer.c:224:33: error: no match for 'operator*' (operand type is 'object3D')
+     *object_list[i]->*intersect(*object_list[i], ray, lambda, p, n, a, b);
+                                 ^
+RayTracer.c:224:73: error: 'intersect' was not declared in this scope
+     *object_list[i]->*intersect(*object_list[i], ray, lambda, p, n, a, b);
+                                                                         ^
+RayTracer.c: In function 'void rayTrace(ray3D*, int, colourRGB*, object3D*)':
+RayTracer.c:265:8: error: no match for 'operator!=' (operand types are 'point3D' and 'long int')
+   if(p != NULL)
+        ^
+RayTracer.c:270:56: error: cannot convert 'point3D' to 'const void*' for argument '2' to 'void* memcpy(void*, const void*, size_t)'
+     memcpy(&dir, curr_light->p0, sizeof(struct point3D));
+                                                        ^
+RayTracer.c:271:22: error: cannot convert 'point3D' to 'point3D*' for argument '1' to 'void subVectors(point3D*, point3D*)'
+     subVectors(p, dir);
+                      ^
+RayTracer.c:272:30: error: cannot convert 'point3D' to 'point3D*' for argument '1' to 'ray3D* newRay(point3D*, point3D*)'
+     lightray = newRay(p, &dir);
+                              ^
+RayTracer.c:273:23: error: base operand of '->' has non-pointer type 'ray3D'
+     normalize(lightray->d);
+                       ^
+RayTracer.c:275:11: error: no match for 'operator==' (operand types are 'point3D' and 'long int')
+     if(tp == NULL){
+           ^
+RayTracer.c:276:45: error: cannot convert 'point3D' to 'point3D*' for argument '2' to 'void rtShade(object3D*, point3D*, point3D*, ray3D*, int, double, double, colourRGB*)'
+      rtShade(obj, p, n, ray, depth, a, b, &I);
+                                             ^
+RayTracer.c: In function 'int main(int, char**)':
+RayTracer.c:450:40: error: conversion from 'point3D*' to non-scalar type 'point3D' requested
+   point3D origin = newPoint(0.0,0.0,0.0);
+                                        ^
+RayTracer.c:451:73: error: conversion from 'point3D*' to non-scalar type 'point3D' requested
+   point3D imagePlane = newPoint((-sx/2 + i + 0.5), (-sx/2 + j + 0.5), -1);
+                                                                         ^
+RayTracer.c:454:56: error: expected ')' before ';' token
+   memcpy(&rayDirection, &origin, sizeof(struct point3D);
+                                                        ^
+utils.c: In function 'void planeIntersect(object3D*, ray3D*, double*, point3D*, point3D*, double*, double*)':
+utils.c:180:22: error: base operand of '->' has non-pointer type 'point3D'
+   *lambda = -(ray->p0->pz)/(ray->d->pz);
+                      ^
+utils.c:180:35: error: base operand of '->' has non-pointer type 'point3D'
+   *lambda = -(ray->p0->pz)/(ray->d->pz);
+                                   ^
+utils.c:182:27: error: base operand of '->' has non-pointer type 'point3D'
+   if(*lambda < 0 || ray->d->pz == 0)
+                           ^
+utils.c:185:8: error: no match for 'operator=' (operand types are 'point3D' and 'long int')
+     *p = NULL;
+        ^
+utils.c:185:8: note: candidate is:
+In file included from utils.h:18:0,
+                 from utils.c:10:
+RayTracer.h:30:8: note: point3D& point3D::operator=(const point3D&)
+ struct point3D{
+        ^
+RayTracer.h:30:8: note:   no known conversion for argument 1 from 'long int' to 'const point3D&'
+utils.c:189:31: error: cannot convert 'double*' to 'double' in argument passing
+     ray->rayPos(ray, lambda, p);
+                               ^
+utils.c: In function 'image* readPPMimage(const char*)':
+utils.c:661:25: warning: ignoring return value of 'char* fgets(char*, int, FILE*)', declared with attribute warn_unused_result [-Wunused-result]
+   fgets(&line[0],1000,f);
+                         ^
+utils.c:671:24: warning: ignoring return value of 'char* fgets(char*, int, FILE*)', declared with attribute warn_unused_result [-Wunused-result]
+   fgets(&line[0],511,f);
+                        ^
+utils.c:675:25: warning: ignoring return value of 'char* fgets(char*, int, FILE*)', declared with attribute warn_unused_result [-Wunused-result]
+    fgets(&line[0],511,f);
+                         ^
+utils.c:682:22: warning: ignoring return value of 'char* fgets(char*, int, FILE*)', declared with attribute warn_unused_result [-Wunused-result]
+   fgets(&line[0],9,f);                   // Read the remaining header line
+                      ^
+utils.c:694:51: warning: ignoring return value of 'size_t fread(void*, size_t, size_t, FILE*)', declared with attribute warn_unused_result [-Wunused-result]
+   fread(tmp,sizx*sizy*3*sizeof(unsigned char),1,f);

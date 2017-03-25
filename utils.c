@@ -177,16 +177,16 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
-  *lambda = -(ray->p0->pz)/(ray->d->pz);
+  *lambda = -(ray->p0.pz)/(ray->d.pz);
 
-  if(*lambda < 0 || ray->d->pz == 0)
+  if(*lambda < 0 || ray->d.pz == 0)
   {
     *lambda = 0;
-    *p = NULL;
+    p = NULL;
   }
   else
   {
-    ray->rayPos(ray, lambda, p);
+    ray->rayPos(ray, *lambda, p);
     n->px = 0;
     n->py = 1;
     n->pz = 0;

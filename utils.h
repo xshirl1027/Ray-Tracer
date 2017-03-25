@@ -17,21 +17,12 @@
 
 #include "RayTracer.h"
 #include "svdDynamic.h"
-
+#include <cmath>
 #ifndef __utils_header
 #define __utils_header
 
-// Function to find the maximum between two doubles
-inline void max(double a, double b)
-{
-  if(a > b)
-    return a;
-  else
-    return b;
-}
-
 // Function to find the minimum between two doubles
-inline void min(double a, double b)
+inline int min(double a, double b)
 {
   if(a < b)
     return a;
