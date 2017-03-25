@@ -19,7 +19,8 @@
 */
 
 #include "utils.h"
-
+#define HEIGHT 1000
+#define WIDTH 1000
 // A couple of global structures and data: An object list, a light list, and the
 // maximum recursion depth
 struct object3D *object_list;
@@ -216,7 +217,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 
   for (int i=0; i < object_list_size; i++)
   {
-    *obj[i]->*intersect(*obj[i], ray, lambda, p, n, a, b);
+    *object_list[i]->*intersect(*object_list[i], ray, lambda, p, n, a, b);
     curr_len = length(p);
     if (min_dist > curr_len && curr_len > 0){
       min_dist = curr_len;
@@ -240,21 +241,24 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
  // ray originates.
  //
 
- double lambda;		// Lambda at intersection
- double a,b;		// Texture coordinates
- struct object3D *obj;	// Pointer to object at intersection
- struct point3D p;	// Intersection point
- struct point3D n;	// Normal at intersection
- struct colourRGB I;	// Colour returned by shading function
+	 double lambda;		// Lambda at intersection
+	 double a,b;		// Texture coordinates
+	 struct object3D *obj;	// Pointer to object at intersection
+	 struct point3D p;	// Intersection point
+	 struct point3D n;	// Normal at intersection
+	 struct colourRGB I;	// Colour returned by shading function
 
- if (depth>MAX_DEPTH)	// Max recursion depth reached. Return invalid colour.
- {
-  col->R=-1;
-  col->G=-1;
-  col->B=-1;
-  return;
- }
+	 if (depth>MAX_DEPTH)	// Max recursion depth reached. Return invalid colour.
+	 {
+	  col->R=-1;
+	  col->G=-1;
+	  col->B=-1;
+	  return;
+	 }
+	 findFirstHit(ray, &lambda, Os, obj, &p, &n, &a, &b);
+	 
 
+	
  ///////////////////////////////////////////////////////
  // TO DO: Complete this function. Refer to the notes
  // if you are unsure what to do here.
@@ -263,178 +267,178 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 
 int main(int argc, char *argv[])
 {
- // Main function for the raytracer. Parses input parameters,
- // sets up the initial blank image, and calls the functions
- // that set up the scene and do the raytracing.
- struct image *im;	// Will hold the raytraced image
- struct view *cam;	// Camera and view for this scene
- int sx;		// Size of the raytraced image
- int antialiasing;	// Flag to determine whether antialiaing is enabled or disabled
- char output_name[1024];	// Name of the output file for the raytraced .ppm image
- struct point3D e;		// Camera view parameters 'e', 'g', and 'up'
- struct point3D g;
- struct point3D up;
- double du, dv;			// Increase along u and v directions for pixel coordinates
- struct point3D pc,d;		// Point structures to keep the coordinates of a pixel and
-				// the direction or a ray
- struct ray3D *ray;		// Structure to keep the ray from e to a pixel
- struct colourRGB col;		// Return colour for raytraced pixels
- struct colourRGB background;   // Background colour
- int i,j;			// Counters for pixel coordinates
- unsigned char *rgbIm;
+	 // Main function for the raytracer. Parses input parameters,
+	 // sets up the initial blank image, and calls the functions
+	 // that set up the scene and do the raytracing.
+	 struct image *im;	// Will hold the raytraced image
+	 struct view *cam;	// Camera and view for this scene
+	 int sx;		// Size of the raytraced image
+	 int antialiasing;	// Flag to determine whether antialiaing is enabled or disabled
+	 char output_name[1024];	// Name of the output file for the raytraced .ppm image
+	 struct point3D e;		// Camera view parameters 'e', 'g', and 'up'
+	 struct point3D g;
+	 struct point3D up;
+	 double du, dv;			// Increase along u and v directions for pixel coordinates
+	 struct point3D pc,d;		// Point structures to keep the coordinates of a pixel and
+					// the direction or a ray
+	 struct ray3D *ray;		// Structure to keep the ray from e to a pixel
+	 struct colourRGB col;		// Return colour for raytraced pixels
+	 struct colourRGB background;   // Background colour
+	 int i,j;			// Counters for pixel coordinates
+	 unsigned char *rgbIm;
 
- if (argc<5)
- {
-  fprintf(stderr,"RayTracer: Can not parse input parameters\n");
-  fprintf(stderr,"USAGE: RayTracer size rec_depth antialias output_name\n");
-  fprintf(stderr,"   size = Image size (both along x and y)\n");
-  fprintf(stderr,"   rec_depth = Recursion depth\n");
-  fprintf(stderr,"   antialias = A single digit, 0 disables antialiasing. Anything else enables antialiasing\n");
-  fprintf(stderr,"   output_name = Name of the output file, e.g. MyRender.ppm\n");
-  exit(0);
- }
- sx=atoi(argv[1]);
- MAX_DEPTH=atoi(argv[2]);
- if (atoi(argv[3])==0) antialiasing=0; else antialiasing=1;
- strcpy(&output_name[0],argv[4]);
+	 if (argc<5)
+	 {
+	  fprintf(stderr,"RayTracer: Can not parse input parameters\n");
+	  fprintf(stderr,"USAGE: RayTracer size rec_depth antialias output_name\n");
+	  fprintf(stderr,"   size = Image size (both along x and y)\n");
+	  fprintf(stderr,"   rec_depth = Recursion depth\n");
+	  fprintf(stderr,"   antialias = A single digit, 0 disables antialiasing. Anything else enables antialiasing\n");
+	  fprintf(stderr,"   output_name = Name of the output file, e.g. MyRender.ppm\n");
+	  exit(0);
+	 }
+	 sx=atoi(argv[1]);
+	 MAX_DEPTH=atoi(argv[2]);
+	 if (atoi(argv[3])==0) antialiasing=0; else antialiasing=1;
+	 strcpy(&output_name[0],argv[4]);
 
- fprintf(stderr,"Rendering image at %d x %d\n",sx,sx);
- fprintf(stderr,"Recursion depth = %d\n",MAX_DEPTH);
- if (!antialiasing) fprintf(stderr,"Antialising is off\n");
- else fprintf(stderr,"Antialising is on\n");
- fprintf(stderr,"Output file name: %s\n",output_name);
+	 fprintf(stderr,"Rendering image at %d x %d\n",sx,sx);
+	 fprintf(stderr,"Recursion depth = %d\n",MAX_DEPTH);
+	 if (!antialiasing) fprintf(stderr,"Antialising is off\n");
+	 else fprintf(stderr,"Antialising is on\n");
+	 fprintf(stderr,"Output file name: %s\n",output_name);
 
- object_list=NULL;
- light_list=NULL;
+	 object_list=NULL;
+	 light_list=NULL;
 
- // Allocate memory for the new image
- im=newImage(sx, sx);
- if (!im)
- {
-  fprintf(stderr,"Unable to allocate memory for raytraced image\n");
-  exit(0);
- }
- else rgbIm=(unsigned char *)im->rgbdata;
+	 // Allocate memory for the new image
+	 im=newImage(sx, sx);
+	 if (!im)
+	 {
+	  fprintf(stderr,"Unable to allocate memory for raytraced image\n");
+	  exit(0);
+	 }
+	 else rgbIm=(unsigned char *)im->rgbdata;
 
- ///////////////////////////////////////////////////
- // TO DO: You will need to implement several of the
- //        functions below. For Assignment 3, you can use
- //        the simple scene already provided. But
- //        for Assignment 4 you need to create your own
- //        *interesting* scene.
- ///////////////////////////////////////////////////
- buildScene();		// Create a scene. This defines all the
-			// objects in the world of the raytracer
+	 ///////////////////////////////////////////////////
+	 // TO DO: You will need to implement several of the
+	 //        functions below. For Assignment 3, you can use
+	 //        the simple scene already provided. But
+	 //        for Assignment 4 you need to create your own
+	 //        *interesting* scene.
+	 ///////////////////////////////////////////////////
+	 buildScene();		// Create a scene. This defines all the
+				// objects in the world of the raytracer
 
- //////////////////////////////////////////
- // TO DO: For Assignment 3 you can use the setup
- //        already provided here. For Assignment 4
- //        you may want to move the camera
- //        and change the view parameters
- //        to suit your scene.
- //////////////////////////////////////////
+	 //////////////////////////////////////////
+	 // TO DO: For Assignment 3 you can use the setup
+	 //        already provided here. For Assignment 4
+	 //        you may want to move the camera
+	 //        and change the view parameters
+	 //        to suit your scene.
+	 //////////////////////////////////////////
 
- // Mind the homogeneous coordinate w of all vectors below. DO NOT
- // forget to set it to 1, or you'll get junk out of the
- // geometric transformations later on.
+	 // Mind the homogeneous coordinate w of all vectors below. DO NOT
+	 // forget to set it to 1, or you'll get junk out of the
+	 // geometric transformations later on.
 
- // Camera center is at (0,0,-1)
- e.px=0;
- e.py=0;
- e.pz=-3;
- e.pw=1;
+	 // Camera center is at (0,0,-1)
+	 e.px=0;
+	 e.py=0;
+	 e.pz=-3;
+	 e.pw=1;
 
- // To define the gaze vector, we choose a point 'pc' in the scene that
- // the camera is looking at, and do the vector subtraction pc-e.
- // Here we set up the camera to be looking at the origin, so g=(0,0,0)-(0,0,-1)
- g.px=0;
- g.py=0;
- g.pz=1;
- g.pw=1;
+	 // To define the gaze vector, we choose a point 'pc' in the scene that
+	 // the camera is looking at, and do the vector subtraction pc-e.
+	 // Here we set up the camera to be looking at the origin, so g=(0,0,0)-(0,0,-1)
+	 g.px=0;
+	 g.py=0;
+	 g.pz=1;
+	 g.pw=1;
 
- // Define the 'up' vector to be the Y axis
- up.px=0;
- up.py=1;
- up.pz=0;
- up.pw=1;
+	 // Define the 'up' vector to be the Y axis
+	 up.px=0;
+	 up.py=1;
+	 up.pz=0;
+	 up.pw=1;
 
- // Set up view with given the above vectors, a 4x4 window,
- // and a focal length of -1 (why? where is the image plane?)
- // Note that the top-left corner of the window is at (-2, 2)
- // in camera coordinates.
- cam=setupView(&e, &g, &up, -3, -2, 2, 4);
+	 // Set up view with given the above vectors, a 4x4 window,
+	 // and a focal length of -1 (why? where is the image plane?)
+	 // Note that the top-left corner of the window is at (-2, 2)
+	 // in camera coordinates.
+	 cam=setupView(&e, &g, &up, -3, -2, 2, 4);
 
- if (cam==NULL)
- {
-  fprintf(stderr,"Unable to set up the view and camera parameters. Our of memory!\n");
-  cleanup(object_list,light_list);
-  deleteImage(im);
-  exit(0);
- }
+	 if (cam==NULL)
+	 {
+	  fprintf(stderr,"Unable to set up the view and camera parameters. Our of memory!\n");
+	  cleanup(object_list,light_list);
+	  deleteImage(im);
+	  exit(0);
+	 }
 
- // Set up background colour here
- background.R=0;
- background.G=0;
- background.B=0;
+	 // Set up background colour here
+	 background.R=0;
+	 background.G=0;
+	 background.B=0;
 
- // Do the raytracing
- //////////////////////////////////////////////////////
- // TO DO: You will need code here to do the raytracing
- //        for each pixel in the image. Refer to the
- //        lecture notes, in particular, to the
- //        raytracing pseudocode, for details on what
- //        to do here. Make sure you undersand the
- //        overall procedure of raytracing for a single
- //        pixel.
- //////////////////////////////////////////////////////
- du=cam->wsize/(sx-1);		// du and dv. In the notes in terms of wl and wr, wt and wb,
- dv=-cam->wsize/(sx-1);		// here we use wl, wt, and wsize. du=dv since the image is
-				// and dv is negative since y increases downward in pixel
-				// coordinates and upward in camera coordinates.
+	 // Do the raytracing
+	 //////////////////////////////////////////////////////
+	 // TO DO: You will need code here to do the raytracing
+	 //        for each pixel in the image. Refer to the
+	 //        lecture notes, in particular, to the
+	 //        raytracing pseudocode, for details on what
+	 //        to do here. Make sure you undersand the
+	 //        overall procedure of raytracing for a single
+	 //        pixel.
+	 //////////////////////////////////////////////////////
+	 du=cam->wsize/(sx-1);		// du and dv. In the notes in terms of wl and wr, wt and wb,
+	 dv=-cam->wsize/(sx-1);		// here we use wl, wt, and wsize. du=dv since the image is
+					// and dv is negative since y increases downward in pixel
+					// coordinates and upward in camera coordinates.
 
- fprintf(stderr,"View parameters:\n");
- fprintf(stderr,"Left=%f, Top=%f, Width=%f, f=%f\n",cam->wl,cam->wt,cam->wsize,cam->f);
- fprintf(stderr,"Camera to world conversion matrix (make sure it makes sense!):\n");
- printmatrix(cam->C2W);
- fprintf(stderr,"World to camera conversion matrix\n");
- printmatrix(cam->W2C);
- fprintf(stderr,"\n");
+	 fprintf(stderr,"View parameters:\n");
+	 fprintf(stderr,"Left=%f, Top=%f, Width=%f, f=%f\n",cam->wl,cam->wt,cam->wsize,cam->f);
+	 fprintf(stderr,"Camera to world conversion matrix (make sure it makes sense!):\n");
+	 printmatrix(cam->C2W);
+	 fprintf(stderr,"World to camera conversion matrix\n");
+	 printmatrix(cam->W2C);
+	 fprintf(stderr,"\n");
 
- fprintf(stderr,"Rendering row: ");
- for (j=0;j<sx;j++)		// For each of the pixels in the image
- {
-  fprintf(stderr,"%d/%d, ",j,sx);
-  for (i=0;i<sx;i++)
-  {
-    ///////////////////////////////////////////////////////////////////
-    // TO DO - complete the code that should be in this loop to do the
-    //         raytracing!
-    ///////////////////////////////////////////////////////////////////
-    point3D origin = newPoint(0.0,0.0,0.0);
-    point3D imagePlane = newPoint((-sx/2 + i + 0.5), (-sx/2 + j + 0.5), -1);
+	 fprintf(stderr,"Rendering row: ");
+	 for (j=0;j<sx;j++)		// For each of the pixels in the image
+	 {
+	  fprintf(stderr,"%d/%d, ",j,sx);
+	  for (i=0;i<sx;i++)
+	  {
+		///////////////////////////////////////////////////////////////////
+		// TO DO - complete the code that should be in this loop to do the
+		//         raytracing!
+		///////////////////////////////////////////////////////////////////
+		point3D origin = newPoint(0.0,0.0,0.0);
+		point3D imagePlane = newPoint((-sx/2 + i + 0.5), (-sx/2 + j + 0.5), -1);
 
-    point3D rayDirection;
-    memcpy(&rayDirection, &origin, sizeof(point3D);
-    subVectors(&imagePlane, &rayDirection);
+		point3D rayDirection;
+		memcpy(&rayDirection, &origin, sizeof(point3D);
+		subVectors(&imagePlane, &rayDirection);
 
-    matVecMult(cam->C2W, &rayDirection);
-    matVecMult(cam->C2W, &origin);
-    ray = newRay(&origin, &rayDirection);
+		matVecMult(cam->C2W, &rayDirection);
+		matVecMult(cam->C2W, &origin);
+		ray = newRay(&origin, &rayDirection);
 
-    // rayTrace(ray, MAX_DEPTH, &col, struct object3D *Os)
+		rayTrace(ray, MAX_DEPTH, &col, struct object3D *Os)
 
 
-  } // end for i
- } // end for j
+	  } // end for i
+	 } // end for j
 
- fprintf(stderr,"\nDone!\n");
+	 fprintf(stderr,"\nDone!\n");
 
- // Output rendered image
- imageOutput(im,output_name);
+	 // Output rendered image
+	 imageOutput(im,output_name);
 
- // Exit section. Clean up and return.
- cleanup(object_list,light_list);		// Object and light lists
- deleteImage(im);				// Rendered image
- free(cam);					// camera view
- exit(0);
+	 // Exit section. Clean up and return.
+	 cleanup(object_list,light_list);		// Object and light lists
+	 deleteImage(im);				// Rendered image
+	 free(cam);					// camera view
+	 exit(0);
 }
