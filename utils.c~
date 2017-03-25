@@ -183,6 +183,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   {
   	//printf("intersected!!!");
     *lambda = 0;
+    p = NULL;
   }
   else
   {
