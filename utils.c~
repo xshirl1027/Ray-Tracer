@@ -183,7 +183,6 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   {
   	//printf("intersected!!!");
     *lambda = 0;
-    p = NULL;
   }
   else
   {
@@ -766,8 +765,8 @@ void deleteImage(struct image *im)
  // De-allocates memory reserved for the image stored in 'im'
  if (im!=NULL)
  {
-  if (im->rgbdata!=NULL) free(im->rgbdata);
-  free(im);
+  //if (im->rgbdata!=NULL) free(im->rgbdata);
+  //free(im);
  }
 }
 
@@ -788,7 +787,7 @@ void cleanup(struct object3D *o_list, struct pointLS *l_list)
    if (p->texImg->rgbdata!=NULL) free(p->texImg->rgbdata);
    free(p->texImg);
   }
-  free(p);
+  //free(p);
   p=q;
  }
 

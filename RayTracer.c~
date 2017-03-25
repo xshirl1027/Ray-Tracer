@@ -486,10 +486,9 @@ int main(int argc, char *argv[])
 		ray = newRay(origin, rayDirection);
 
 		rayTrace(ray, MAX_DEPTH, &col, NULL);
-		(unsigned char)im->rgbdata[(j+1)*sx*3 + i*3]  = col.R;
-		im->rgbdata[(j+1)*sx*3 + i*3+1] = col.G;
-		im->rgbdata[(j+1)*sx*3 + i*3+2] = col.B;
-
+		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3]  = col.R;
+		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+1] = col.G;
+		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+2] = col.B;
 	  } // end for i
 	 } // end for j
 
@@ -499,7 +498,7 @@ int main(int argc, char *argv[])
 	 imageOutput(im,output_name);
 
 	 // Exit section. Clean up and return.
-	 cleanup(object_list,light_list);		// Object and light lists
+	 //cleanup(object_list,light_list);		// Object and light lists
 	 deleteImage(im);				// Rendered image
 	 free(cam);					// camera view
 	 exit(0);
