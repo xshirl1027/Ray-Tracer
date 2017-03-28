@@ -242,9 +242,15 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   {
     curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
     //printf("%f", lambda);
-    curr_len = length(p);
-    if (min_dist > curr_len && curr_len > 0){
+    struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
+    memcpy(dist_v, p, sizeof(struct point3D));
+    subVectors(&(ray->p0), dist_v);
+    curr_len = length(dist_v);
+    if ((min_dist > curr_len) && (curr_len > 0)){
+    	//printf("assigning Os");
       min_dist = curr_len;
+      *obj = curr_obj;
+      //printf("R: %f G: %f B: %f \n", Os->col.R, Os->col.G, Os->col.B);
     }
     curr_obj = curr_obj->next;
   }
@@ -280,41 +286,60 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	  col->G=-1;
 	  col->B=-1;
 	  return;
-	 }else{
-		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
-		struct ray3D lightray;
-		struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
-		if(lambda > 0)
-		{	
+	 } 
+	 else
+	 {
+	 	//printf("Depth is valid!\n");
+		// if (Os == NULL)
+		// 	printf("Os is NULL\n");
+		// 	*Os = malloc(sizeof(struct object3D));
 
-			struct pointLS *curr_light = light_list;
-			while (curr_light!=NULL)
-			{
-				memcpy(dir, &curr_light->p0, sizeof(struct point3D));
-				subVectors(&p, dir);
-				lightray = *(newRay(&p, dir));
-				normalize(&(lightray.d));
-				findFirstHit(&lightray, &lambda, Os, &obj, &p, &n, &a, &b);
-				//printf("%f", lambda);
-				if(lambda <= 0){
-					//printf("intersected!!!");
-					rtShade(obj, &p, &n, ray, depth, a, b, &I);
+		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
+
+		if (obj != NULL){
+			col->R = obj->col.R;
+			col->G = obj->col.G;
+			col->B = obj->col.B;
+
+		}else{
+			col->R =0.0;
+			col->G =0.0;
+			col->B =0.0;
+
+		}
+		// struct ray3D lightray;
+		// struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
+		// if(lambda > 0)
+		// {	
+
+		// 	struct pointLS *curr_light = light_list;
+		// 	while (curr_light!=NULL)
+		// 	{
+		// 		memcpy(dir, &curr_light->p0, sizeof(struct point3D));
+		// 		subVectors(&p, dir);
+		// 		lightray = *(newRay(&p, dir));
+		// 		normalize(&(lightray.d));
+		// 		findFirstHit(&lightray, &lambda, Os, &obj, &p, &n, &a, &b);
+		// 		//printf("%f", lambda);
+		// 		if(lambda <= 0){
+		// 			//printf("intersected!!!");
+		// 			rtShade(obj, &p, &n, ray, depth, a, b, &I);
 					
-					col->R += I.R;
-					col->G += I.G;
-					col->B += I.B;
-					printf("RGB %f, %f, %f\n", col->R, col->G, col->B);
+		// 			col->R += I.R;
+		// 			col->G += I.G;
+		// 			col->B += I.B;
+		// 			printf("RGB %f, %f, %f\n", col->R, col->G, col->B);
 					
-				}
-				curr_light = curr_light->next;
-			}
+		// 		}
+		// 		curr_light = curr_light->next;
+		// 	}
 
 			//if(depth>0){
 				//create reflected ray
 				//rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object3D *Os)
 
 			//}
-		}
+		// }
 		
 	 }
 	 
@@ -465,11 +490,14 @@ int main(int argc, char *argv[])
 	 printmatrix(cam->W2C);
 	 fprintf(stderr,"\n");
 
+	 struct object3D *Os;
+	 Os = NULL;
+
 	 //fprintf(stderr,"Rendering row: ");
-	 for (j=0;j<sx;j++)		// For each of the pixels in the image
+	 for (j=0;j<sx-1;j++)		// For each of the pixels in the image
 	 {
 	 // fprintf(stderr,"%d/%d, ",j,sx);
-	  for (i=0;i<sx;i++)
+	  for (i=0;i<sx-1;i++)
 	  {
 		///////////////////////////////////////////////////////////////////
 		// TO DO - complete the code that should be in this loop to do the
@@ -485,21 +513,28 @@ int main(int argc, char *argv[])
 		matVecMult(cam->C2W, origin);
 		ray = newRay(origin, rayDirection);
 
-		rayTrace(ray, MAX_DEPTH, &col, NULL);
-		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3]  = col.R;
-		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+1] = col.G;
-		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+2] = col.B;
+		rayTrace(ray, MAX_DEPTH, &col, Os);
+		if(sx*sx*3<=((j+1)*sx*3 + i*3)){
+			printf("culprit:%d, %d\n",i,j);
+		}
+		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3] = col.R*255;
+		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+1] = col.G*255;
+		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+2] = col.B*255;
+		//printf("R: %f G: %f B: %f \n", ((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3], ((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+1], ((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+2] );
+	    //printf("R: %f G: %f B: %f \n", col.R, col.G, col.B);
 	  } // end for i
 	 } // end for j
 
 	 fprintf(stderr,"\nDone!\n");
 
+
+
 	 // Output rendered image
 	 imageOutput(im,output_name);
 
 	 // Exit section. Clean up and return.
-	 cleanup(object_list,light_list);		// Object and light lists
-	 deleteImage(im);				// Rendered image
+	 // cleanup(object_list,light_list);		// Object and light lists
+	 // deleteImage(im);				// Rendered image
 	 free(cam);					// camera view
 	 exit(0);
 }
