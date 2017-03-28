@@ -301,11 +301,12 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 			col->G = obj->col.G;
 			col->B = obj->col.B;
 
-		}else{
+		}
+		else
+		{
 			col->R =0.0;
 			col->G =0.0;
 			col->B =0.0;
-
 		}
 		// struct ray3D lightray;
 		// struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
@@ -494,10 +495,10 @@ int main(int argc, char *argv[])
 	 Os = NULL;
 
 	 //fprintf(stderr,"Rendering row: ");
-	 for (j=0;j<sx-1;j++)		// For each of the pixels in the image
+	 for (j=0;j<sx;j++)		// For each of the pixels in the image
 	 {
 	 // fprintf(stderr,"%d/%d, ",j,sx);
-	  for (i=0;i<sx-1;i++)
+	  for (i=0;i<sx;i++)
 	  {
 		///////////////////////////////////////////////////////////////////
 		// TO DO - complete the code that should be in this loop to do the
@@ -514,14 +515,12 @@ int main(int argc, char *argv[])
 		ray = newRay(origin, rayDirection);
 
 		rayTrace(ray, MAX_DEPTH, &col, Os);
-		if(sx*sx*3<=((j+1)*sx*3 + i*3)){
-			printf("culprit:%d, %d\n",i,j);
-		}
-		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3] = col.R*255;
-		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+1] = col.G*255;
-		((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+2] = col.B*255;
-		//printf("R: %f G: %f B: %f \n", ((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3], ((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+1], ((unsigned char*)im->rgbdata)[(j+1)*sx*3 + i*3+2] );
-	    //printf("R: %f G: %f B: %f \n", col.R, col.G, col.B);
+
+		((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
+		((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
+		((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
+		// printf("R: %u G: %u B: %u \n", ((unsigned char*)im->rgbdata)[(j*sx + i)*3], ((unsigned char*)im->rgbdata)[(j*sx + i)*3+1], ((unsigned char*)im->rgbdata)[(j*sx + i)*3+2]);
+	    // printf("R: %f G: %f B: %f \n", col.R, col.G, col.B);
 	  } // end for i
 	 } // end for j
 

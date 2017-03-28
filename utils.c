@@ -177,7 +177,8 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
-  *lambda = -(ray->p0.pz)/(ray->d.pz);
+  *lambda = -1*(dot(&ray->p0,n))/(dot(&ray->d,n));
+  // printf("lambda %f\n", *lambda);
 
   if(*lambda < 0 || ray->d.pz == 0)
   {
@@ -191,7 +192,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
     n->py = 1;
     n->pz = 0;
     n->pw = 1;
-
+    printf("p: %f, %f, %f, %f", p->px, p->py, p->pz, p->pw);
     if (p->px >= -1 && p->px <= 1 && p->pz >= -1 && p->pz <= 1)
     {
       matVecMult(plane->T,p);
