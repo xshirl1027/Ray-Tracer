@@ -232,14 +232,13 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  // TO DO: Implement this function. See the notes for
  // reference of what to do in here
  /////////////////////////////////////////////////////////////
-  double min_dist = 1.0/0.0;
+  double min_dist = 9999;
   double curr_len = 0;
 
   struct object3D *curr_obj;
   curr_obj = object_list;
   
-  while (curr_obj != NULL)
-  {
+  
     curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
     //printf("%f", lambda);
     struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
@@ -252,9 +251,6 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
       *obj = curr_obj;
       //printf("R: %f G: %f B: %f \n", Os->col.R, Os->col.G, Os->col.B);
     }
-    curr_obj = curr_obj->next;
-  }
-
 
 }
 
@@ -296,7 +292,8 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 
 		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
 
-		if (obj != NULL){
+//		if (obj != NULL){
+		if (lambda > 0){
 			col->R = obj->col.R;
 			col->G = obj->col.G;
 			col->B = obj->col.B;
@@ -441,13 +438,13 @@ int main(int argc, char *argv[])
 	 g.px=0;
 	 g.py=0;
 	 g.pz=1;
-	 g.pw=1;
+	 g.pw=0;
 
 	 // Define the 'up' vector to be the Y axis
 	 up.px=0;
 	 up.py=1;
 	 up.pz=0;
-	 up.pw=1;
+	 up.pw=0;
 
 	 // Set up view with given the above vectors, a 4x4 window,
 	 // and a focal length of -1 (why? where is the image plane?)
@@ -504,12 +501,13 @@ int main(int argc, char *argv[])
 		// TO DO - complete the code that should be in this loop to do the
 		//         raytracing!
 		///////////////////////////////////////////////////////////////////
-		struct point3D *origin = newPoint(0.0,0.0,0.0);
-		struct point3D *imagePlane = newPoint((-sx/2 + i + 0.5), (-sx/2 + j + 0.5), -1);
+		struct point3D *origin = newPoint(0,0,0);
+		struct point3D *imagePlane = newPoint((cam->wl+ i*du + du/2), (cam->wt + j*dv + dv/2), -1);
 		struct point3D *rayDirection = (struct point3D*) malloc(sizeof(struct point3D));
-		memcpy(rayDirection, origin, sizeof(struct point3D));
-		subVectors(imagePlane, rayDirection);
-
+		//memcpy(rayDirection, origin, sizeof(struct point3D)); //this is wrong. should be image plane minus origin
+		//subVectors(imagePlane, rayDirection);
+		memcpy(rayDirection, imagePlane, sizeof(struct point3D));
+		subVectors(origin, rayDirection);
 		matVecMult(cam->C2W, rayDirection);
 		matVecMult(cam->C2W, origin);
 		ray = newRay(origin, rayDirection);
@@ -525,8 +523,8 @@ int main(int argc, char *argv[])
 	 } // end for j
 
 	 fprintf(stderr,"\nDone!\n");
-
-
+	 //printmatrix(object_list[0].T);
+	 //printmatrix(object_list[0].Tinv);
 
 	 // Output rendered image
 	 imageOutput(im,output_name);

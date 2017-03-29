@@ -70,6 +70,12 @@ inline void rayTransform(struct ray3D *ray_orig, struct ray3D *ray_transformed, 
  ///////////////////////////////////////////
  // TO DO: Complete this function
  ///////////////////////////////////////////
+ 
+ memcpy(ray_transformed, ray_orig, sizeof(struct ray3D));
+ matVecMult(obj->T, &(ray_transformed->p0));
+ matVecMult(obj->T, &(ray_transformed->d));
+ 
+ 
 }
 
 inline void normalTransform(struct point3D *n_orig, struct point3D *n_transformed, struct object3D *obj)
@@ -81,6 +87,12 @@ inline void normalTransform(struct point3D *n_orig, struct point3D *n_transforme
  ///////////////////////////////////////////
  // TO DO: Complete this function
  ///////////////////////////////////////////
+ memcpy(n_orig, n_transformed, sizeof(struct point3D));
+ //transpose(n_transformed)
+ double trans_Tinv[4][4];
+ transpose(obj->Tinv, trans_Tinv);
+ matVecMult(trans_Tinv, n_transformed);
+ 
 }
 
 /////////////////////////////////////////////
@@ -173,30 +185,39 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
 {
  // Computes and returns the value of 'lambda' at the intersection
  // between the specified ray and the specified canonical plane.
-
+	//1. transform ray using inverse transform
+	//2. find intersection with model object
+	//3. transform model and intersection point to world
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
-  *lambda = -1*(dot(&ray->p0,n))/(dot(&ray->d,n));
-  // printf("lambda %f\n", *lambda);
+  struct ray3D * transformed_ray =(struct ray3D *)malloc(sizeof(struct ray3D));
+  struct point3D * transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
+  rayTransform(ray, transformed_ray, plane);
+   //*lambda = -1*(dot(&transformed_ray->p0,n))/(dot(&transformed_ray->d,n));
+	*lambda = -(transformed_ray->p0.pz)/transformed_ray->d.pz;
 
-  if(*lambda < 0 || ray->d.pz == 0)
+  if(*lambda <=0 || transformed_ray->d.pz == 0)
   {
-  	//printf("intersected!!!");
     *lambda = 0;
+    //printf("this should be set to black");
   }
   else
   {
-    ray->rayPos(ray, *lambda, p);
+    transformed_ray->rayPos(transformed_ray, *lambda, p); //finding point of intersection
     n->px = 0;
     n->py = 1;
     n->pz = 0;
-    n->pw = 1;
-    printf("p: %f, %f, %f, %f", p->px, p->py, p->pz, p->pw);
-    if (p->px >= -1 && p->px <= 1 && p->pz >= -1 && p->pz <= 1)
-    {
-      matVecMult(plane->T,p);
-      matVecMult(plane->Tinv,n);
+    n->pw = 0;
+
+    if (p->px >= -1 && p->px <= 1 && p->pz >= -1 && p->pz <= 1) //point within bound
+    { //now transform point from model space to world space, the normal as well
+      matVecMult(plane->Tinv,p);
+      normalTransform(n, transformed_n, plane);
+      memcpy(n, transformed_n, sizeof(point3D));
+      //matVecMult(plane->Tinv,n); //should call normal transform
+    }else{
+     	*lambda = 0;
     }
   }
 }
@@ -311,6 +332,15 @@ void addAreaLight(float sx, float sy, float nx, float ny, float nz,\
   // Implement this function to enable area light sources
   /////////////////////////////////////////////////////
 
+}
+
+void transpose(double T[4][4], double Ttrans[4][4]){
+	int i,j;	
+	for (i=0; i<4; i++){
+		for(j=0;j<4;j++){
+			Ttrans[j][i] = T[i][j];		
+		}	
+	}
 }
 
 ///////////////////////////////////
