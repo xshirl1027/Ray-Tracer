@@ -198,11 +198,11 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
  /////////////////////////////////
 
   //transformation of ray and normal holder variables
-  struct ray3D * transformed_ray =(struct ray3D *)malloc(sizeof(struct ray3D));
+  struct ray3D * model_ray =(struct ray3D *)malloc(sizeof(struct ray3D));
   struct point3D * transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
   
   //transform ray using inverse transform
-  rayTransform(ray, transformed_ray, plane);
+  rayTransform(ray, model_ray, plane);
   
   //setting n as per model view
   n->px = 0;
@@ -211,22 +211,22 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   n->pw = 0;
 	
   //calculating lambda
-	*lambda = -(transformed_ray->p0.py)/transformed_ray->d.py;
+	*lambda = -(model_ray->p0.py)/model_ray->d.py;
 
   //checking lambda and making sure ray is not parallel to plane
-  if(*lambda <=0 || transformed_ray->d.pz == 0)
+  if(*lambda <=0 || model_ray->d.pz == 0)
   {
     *lambda = 0;
   }
   else
   { 
     //finding point of intersection
-    transformed_ray->rayPos(transformed_ray, *lambda, p); 
+    model_ray->rayPos(model_ray, *lambda, p); 
 
     //checking if point within bound & transforming from model space to world space
     if ((p->px >= -1.0 && p->px <= 1.0) && (p->pz >= -1.0 && p->pz <= 1.0)) 
     { 
-  		// printf("it intersected at (%f, %f, %f)\n", p->px, p->py, p->pz);
+  		//printf("it intersected at (%f, %f, %f)\n", p->px, p->py, p->pz);
       matVecMult(plane->T,p); //converting p from model to world
       
       //transforming normal using inverse transpose of model to world matix
@@ -241,7 +241,34 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
 {
  // Computes and returns the value of 'lambda' at the intersection
  // between the specified ray and the specified canonical sphere.
-
+	
+	struct ray3D model_ray* = (struct ray3D*)malloc(sizeof(struct ray3D*));
+	struct point3D model_ray_dir_sq* = (struct point3D*)malloc(sizeof(struct point3D*));
+	struct point3D camtocenter* = (struct point3D*)malloc(sizeof(struct point3D*));
+	transform_ray(ray, model_ray, sphere);
+	
+	double A = rayInModel.dir.dot(rayInModel.dir);
+	double B = rayInModel.dir.dot(rayInModel.origin - Point3D());
+	double C = (rayInModel.origin - Point3D()).dot(rayInModel.origin - Point3D()) - 1;
+	
+	memcpy(model_ray_sq, &(model_ray->d), sizeof(point3D));
+	double a = dot(&(model_ray->d), model_ray_sq);
+	memcpy(camtocenter,&(ray->p0), sizeof(point3D));
+	cemtocenter->px = -cemtocenter->px;
+	cemtocenter->p = -cemtocenter->py;
+	cemtocenter->pz = -cemtocenter->pz;
+	double b = 2*dot(&(model_ray->d), camtocenter);
+	double c = dot(camtocenter,camtocenter) - 1;
+	double delta = soln = b*b - a*c;
+	if(delta==0){ //only 1 intersection
+		*lambda = -b/a;
+	}else if(delta>0){ //2 intersections, determine the closest 1
+		
+	}else{
+		//no intersection
+		*lambda = -1;
+	}
+	
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////

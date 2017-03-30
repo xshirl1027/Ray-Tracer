@@ -500,6 +500,7 @@ int main(int argc, char *argv[])
 		///////////////////////////////////////////////////////////////////
 		struct point3D *origin = newPoint(0,0,0);
 		pc = *newPoint((cam->wl+ i*du + du/2), (cam->wt + j*dv + dv/2), -1);
+		//pc = *newPoint((-sx/2+ i + 0.5), (sx/2 -j-0.5), -1);
 		memcpy(&d, &pc, sizeof(struct point3D));
 		subVectors(origin, &d);
 		d.pw=0;
