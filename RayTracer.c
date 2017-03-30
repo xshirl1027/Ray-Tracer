@@ -488,9 +488,6 @@ int main(int argc, char *argv[])
 	 printmatrix(cam->W2C);
 	 fprintf(stderr,"\n");
 
-	 struct object3D *Os;
-	 Os = NULL;
-
 	 //fprintf(stderr,"Rendering row: ");
 	 for (j=0;j<sx;j++)		// For each of the pixels in the image
 	 {
@@ -502,20 +499,17 @@ int main(int argc, char *argv[])
 		//         raytracing!
 		///////////////////////////////////////////////////////////////////
 		struct point3D *origin = newPoint(0,0,0);
-		struct point3D *imagePlane = newPoint((cam->wl+ i*du + du/2), (cam->wt + j*dv + dv/2), -1);
-		struct point3D *rayDirection = (struct point3D*) malloc(sizeof(struct point3D));
-		//memcpy(rayDirection, origin, sizeof(struct point3D)); //this is wrong. should be image plane minus origin
-		//subVectors(imagePlane, rayDirection);
-		memcpy(rayDirection, imagePlane, sizeof(struct point3D));
-		subVectors(origin, rayDirection);
-		rayDirection->pw=0;
-		normalize(rayDirection);
-		matVecMult(cam->C2W, rayDirection);
-		normalize(rayDirection);
+		pc = *newPoint((cam->wl+ i*du + du/2), (cam->wt + j*dv + dv/2), -1);
+		memcpy(&d, &pc, sizeof(struct point3D));
+		subVectors(origin, &d);
+		d.pw=0;
+		normalize(&d);
+		matVecMult(cam->C2W, &d);
+		normalize(&d);
 		matVecMult(cam->C2W, origin);
-		ray = newRay(origin, rayDirection);
+		ray = newRay(origin, &d);
 
-		rayTrace(ray, MAX_DEPTH, &col, Os);
+		rayTrace(ray, MAX_DEPTH, &col, NULL);
 
 		((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
 		((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);

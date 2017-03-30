@@ -70,12 +70,15 @@ inline void rayTransform(struct ray3D *ray_orig, struct ray3D *ray_transformed, 
  ///////////////////////////////////////////
  // TO DO: Complete this function
  ///////////////////////////////////////////
- 
+ //copying original ray into transformed ray holder
  memcpy(ray_transformed, ray_orig, sizeof(struct ray3D));
+ 
+ //transforming ray origin and direction vector from world to model view, using T_inv
  matVecMult(obj->Tinv, &(ray_transformed->p0));
  matVecMult(obj->Tinv, &(ray_transformed->d));
  
- 
+ //normalizing ray direction and origin
+ normalize(&(ray_transformed->d));
 }
 
 inline void normalTransform(struct point3D *n_orig, struct point3D *n_transformed, struct object3D *obj)
@@ -87,12 +90,14 @@ inline void normalTransform(struct point3D *n_orig, struct point3D *n_transforme
  ///////////////////////////////////////////
  // TO DO: Complete this function
  ///////////////////////////////////////////
- memcpy(n_orig, n_transformed, sizeof(struct point3D));
- //transpose(n_transformed)
- double trans_Tinv[4][4];
- transpose(obj->T, trans_Tinv);
- matVecMult(trans_Tinv, n_transformed);
- 
+ memcpy(n_transformed, n_orig, sizeof(struct point3D)); //copying original n into transformed n
+ double T_transpose[4][4]; //empty matrix for storing transpose of model to world matrix
+
+ // Note: "inverse transpose of model to world matrix", i.e. transpose(T^(-1)) == transpose(T)
+ //       using linear algebra basics: transpose(A) = transpose(A^(-1))
+ transpose(obj->T, T_transpose); //finding transpose of model to world matrix
+ matVecMult(T_transpose, n_transformed); //transforming n from model to world
+ normalize(n_transformed); //normalizing transformation of n
 }
 
 /////////////////////////////////////////////
@@ -191,38 +196,44 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
+
+  //transformation of ray and normal holder variables
   struct ray3D * transformed_ray =(struct ray3D *)malloc(sizeof(struct ray3D));
   struct point3D * transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
+  
+  //transform ray using inverse transform
   rayTransform(ray, transformed_ray, plane);
-  //memcpy(transformed_ray, ray, sizeof(struct ray3D));
-    n->px = 0;
-    n->py = 1;
-    n->pz = 0;
-    n->pw = 0;
-	//double lambda1 = dot(&transformed_ray->p0,n);
-	//double lambda2 = dot(&transformed_ray->d,n);	
-   //*lambda = -(lambda1/lambda2);
-	*lambda = -(transformed_ray->p0.pz)/transformed_ray->d.pz;
+  
+  //setting n as per model view
+  n->px = 0;
+  n->py = 1;
+  n->pz = 0;
+  n->pw = 0;
+	
+  //calculating lambda
+	*lambda = -(transformed_ray->p0.py)/transformed_ray->d.py;
 
-  if(*lambda <=0|| transformed_ray->d.pz == 0)
+  //checking lambda and making sure ray is not parallel to plane
+  if(*lambda <=0 || transformed_ray->d.pz == 0)
   {
     *lambda = 0;
-    //printf("this should be set to black");
   }
   else
   { 
-    transformed_ray->rayPos(transformed_ray, *lambda, p); //finding point of intersection
-    if ((p->px >= -1.0 && p->px <= 1.0) && (p->pz >= -1.0 && p->pz <= 1.0)) //point within bound
-    { //now transform point from model space to world space, the normal as well
-		printf("it intersected at (%f, %f, %f)\n", p->px, p->py, p->pz);
-      matVecMult(plane->Tinv,p);
-      normalTransform(n, transformed_n, plane);
-      memcpy(n, transformed_n, sizeof(point3D));
-      matVecMult(plane->Tinv,n); //should call normal transform
-      normalize(n);
-    }else{
-     	*lambda = 0;
+    //finding point of intersection
+    transformed_ray->rayPos(transformed_ray, *lambda, p); 
+
+    //checking if point within bound & transforming from model space to world space
+    if ((p->px >= -1.0 && p->px <= 1.0) && (p->pz >= -1.0 && p->pz <= 1.0)) 
+    { 
+  		// printf("it intersected at (%f, %f, %f)\n", p->px, p->py, p->pz);
+      matVecMult(plane->T,p); //converting p from model to world
+      
+      //transforming normal using inverse transpose of model to world matix
+      normalTransform(n, transformed_n, plane); 
+      memcpy(n, transformed_n, sizeof(point3D)); //storing transformation from MtoW of n
     }
+    else *lambda = 0;
   }
 }
 
