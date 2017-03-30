@@ -259,11 +259,19 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
 	cemtocenter->pz = -cemtocenter->pz;
 	double b = 2*dot(&(model_ray->d), camtocenter);
 	double c = dot(camtocenter,camtocenter) - 1;
-	double delta = soln = b*b - a*c;
+	double delta = b*b - a*c;
 	if(delta==0){ //only 1 intersection
 		*lambda = -b/a;
 	}else if(delta>0){ //2 intersections, determine the closest 1
-		
+		double lambda1 = (-b + sqrt(delta))/a;
+		double lambda2 = (-b - sqrt(delta))/a;
+		if(lambda1<= 0 && lambda2 < 0) {
+			*lambda = -1;
+		} else if(lambda1 > 0 && lambda2 < 0) {
+			*lambda = lambda1;
+		} else if(lambda1 > lambda2 && lambda2 > 0) {
+			*lambda = lambda2;
+}
 	}else{
 		//no intersection
 		*lambda = -1;
