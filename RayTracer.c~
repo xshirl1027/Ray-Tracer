@@ -238,8 +238,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   struct object3D *curr_obj;
   curr_obj = object_list;
   
-  while (curr_obj != NULL)
-  {
+  
     curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
     //printf("%f", lambda);
     struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
@@ -252,9 +251,6 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
       *obj = curr_obj;
       //printf("R: %f G: %f B: %f \n", Os->col.R, Os->col.G, Os->col.B);
     }
-    curr_obj = curr_obj->next;
-  }
-
 
 }
 
@@ -512,6 +508,8 @@ int main(int argc, char *argv[])
 		//subVectors(imagePlane, rayDirection);
 		memcpy(rayDirection, imagePlane, sizeof(struct point3D));
 		subVectors(origin, rayDirection);
+		rayDirection->pw=0;
+		normalize(rayDirection);
 		matVecMult(cam->C2W, rayDirection);
 		matVecMult(cam->C2W, origin);
 		ray = newRay(origin, rayDirection);

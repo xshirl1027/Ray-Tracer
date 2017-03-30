@@ -508,7 +508,10 @@ int main(int argc, char *argv[])
 		//subVectors(imagePlane, rayDirection);
 		memcpy(rayDirection, imagePlane, sizeof(struct point3D));
 		subVectors(origin, rayDirection);
+		rayDirection->pw=0;
+		normalize(rayDirection);
 		matVecMult(cam->C2W, rayDirection);
+		normalize(rayDirection);
 		matVecMult(cam->C2W, origin);
 		ray = newRay(origin, rayDirection);
 
