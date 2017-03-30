@@ -71,14 +71,18 @@ inline void rayTransform(struct ray3D *ray_orig, struct ray3D *ray_transformed, 
  // TO DO: Complete this function
  ///////////////////////////////////////////
  //copying original ray into transformed ray holder
- memcpy(ray_transformed, ray_orig, sizeof(struct ray3D));
+  ray_transformed = (struct ray3D*)malloc(sizeof(struct ray3D*));
+  printf("ray_orig: %f,%f,%f\n", ray_orig->d.px, ray_orig->d.py, ray_orig->d.pz);
+  printf("ray_transformed: %f,%f,%f\n", ray_transformed->d.px, ray_transformed->d.py, ray_transformed->d.pz);
+
+
+  memcpy(ray_transformed, ray_orig, sizeof(struct ray3D));
  
  //transforming ray origin and direction vector from world to model view, using T_inv
- matVecMult(obj->Tinv, &(ray_transformed->p0));
- matVecMult(obj->Tinv, &(ray_transformed->d));
- 
+  matVecMult(obj->Tinv, &(ray_transformed->p0));
+  matVecMult(obj->Tinv, &(ray_transformed->d));
  //normalizing ray direction and origin
- normalize(&(ray_transformed->d));
+  normalize(&(ray_transformed->d));
 }
 
 inline void normalTransform(struct point3D *n_orig, struct point3D *n_transformed, struct object3D *obj)
@@ -246,8 +250,10 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  // TO DO: Complete this function.
  /////////////////////////////////
 
-	struct ray3D *model_ray = (struct ray3D*)malloc(sizeof(struct ray3D*));
+	struct ray3D *model_ray;
 	
+  //printf("(%f,%f,%f,%f),(%f,%f,%f,%f)\n", ray->p0.px,ray->p0.py,ray->p0.pz,ray->p0.pw, ray->d.px,ray->d.py,ray->d.pz,ray->d.pw);
+
   // transforming ray from world to model
   rayTransform(ray, model_ray, sphere);
 	

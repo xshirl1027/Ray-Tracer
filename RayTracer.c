@@ -232,25 +232,27 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  // TO DO: Implement this function. See the notes for
  // reference of what to do in here
  /////////////////////////////////////////////////////////////
-  double min_dist = 9999;
+  double min_dist = 99999;
   double curr_len = 0;
 
   struct object3D *curr_obj;
   curr_obj = object_list;
   
-  
-    curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
-    //printf("%f", lambda);
-    struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
-    memcpy(dist_v, p, sizeof(struct point3D));
-    subVectors(&(ray->p0), dist_v);
-    curr_len = length(dist_v);
-    if ((min_dist > curr_len) && (curr_len > 0)){
-    	//printf("assigning Os");
-      min_dist = curr_len;
-      *obj = curr_obj;
-      //printf("R: %f G: %f B: %f \n", Os->col.R, Os->col.G, Os->col.B);
-    }
+  	while(curr_obj != NULL){
+	    curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
+	    //printf("%f", lambda);
+	    struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
+	    memcpy(dist_v, p, sizeof(struct point3D));
+	    subVectors(&(ray->p0), dist_v);
+	    curr_len = length(dist_v);
+	    if ((min_dist > curr_len) && (curr_len > 0)){
+	    	//printf("assigning Os");
+	      min_dist = curr_len;
+	      *obj = curr_obj;
+	      //printf("R: %f G: %f B: %f \n", Os->col.R, Os->col.G, Os->col.B);
+	    }
+	    curr_obj = curr_obj->next;
+	}
 
 }
 
@@ -499,8 +501,13 @@ int main(int argc, char *argv[])
 		//         raytracing!
 		///////////////////////////////////////////////////////////////////
 		struct point3D *origin = newPoint(0,0,0);
-		pc = *newPoint((cam->wl+ i*du + du/2), (cam->wt + j*dv + dv/2), -1);
-		//pc = *newPoint((-sx/2+ i + 0.5), (sx/2 -j-0.5), -1);
+		pc.px = cam->wl+ i*du + du/2;
+		pc.py = cam->wt + j*dv + dv/2;
+		pc.pz = -1;
+		pc.pw = 1;
+		//printf("%f, %f, %f, %f\n", pc.px, pc.py, pc.pz, pc.pw);
+
+		// pc = *newPoint((-sx/2+ i + 0.5), (sx/2 -j-0.5), -1);
 		memcpy(&d, &pc, sizeof(struct point3D));
 		subVectors(origin, &d);
 		d.pw=0;
@@ -509,7 +516,7 @@ int main(int argc, char *argv[])
 		normalize(&d);
 		matVecMult(cam->C2W, origin);
 		ray = newRay(origin, &d);
-
+		//printf("%f,%f, %f\n", ray->d.px,ray->d.py, ray->d.pz);
 		rayTrace(ray, MAX_DEPTH, &col, NULL);
 
 		((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
