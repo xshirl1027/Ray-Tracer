@@ -241,45 +241,53 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
 {
  // Computes and returns the value of 'lambda' at the intersection
  // between the specified ray and the specified canonical sphere.
-	
-	struct ray3D model_ray* = (struct ray3D*)malloc(sizeof(struct ray3D*));
-	struct point3D model_ray_dir_sq* = (struct point3D*)malloc(sizeof(struct point3D*));
-	struct point3D camtocenter* = (struct point3D*)malloc(sizeof(struct point3D*));
-	transform_ray(ray, model_ray, sphere);
-	
-	double A = rayInModel.dir.dot(rayInModel.dir);
-	double B = rayInModel.dir.dot(rayInModel.origin - Point3D());
-	double C = (rayInModel.origin - Point3D()).dot(rayInModel.origin - Point3D()) - 1;
-	
-	memcpy(model_ray_sq, &(model_ray->d), sizeof(point3D));
-	double a = dot(&(model_ray->d), model_ray_sq);
-	memcpy(camtocenter,&(ray->p0), sizeof(point3D));
-	cemtocenter->px = -cemtocenter->px;
-	cemtocenter->p = -cemtocenter->py;
-	cemtocenter->pz = -cemtocenter->pz;
-	double b = 2*dot(&(model_ray->d), camtocenter);
-	double c = dot(camtocenter,camtocenter) - 1;
-	double delta = b*b - a*c;
-	if(delta==0){ //only 1 intersection
-		*lambda = -b/a;
-	}else if(delta>0){ //2 intersections, determine the closest 1
-		double lambda1 = (-b + sqrt(delta))/a;
-		double lambda2 = (-b - sqrt(delta))/a;
-		if(lambda1<= 0 && lambda2 < 0) {
-			*lambda = -1;
-		} else if(lambda1 > 0 && lambda2 < 0) {
-			*lambda = lambda1;
-		} else if(lambda1 > lambda2 && lambda2 > 0) {
-			*lambda = lambda2;
-}
-	}else{
-		//no intersection
-		*lambda = -1;
-	}
-	
+
  /////////////////////////////////
  // TO DO: Complete this function.
  /////////////////////////////////
+
+	struct ray3D *model_ray = (struct ray3D*)malloc(sizeof(struct ray3D*));
+	
+  // transforming ray from world to model
+  rayTransform(ray, model_ray, sphere);
+	
+  // getting coefficients of sphere equation, i.e. A.t^2 + B.t + C - R^2 = 0 :
+  // A = d.d, where d is the direction vector of ray in model space
+  double A = dot(&(model_ray->d), &(model_ray->d));
+
+
+  // B = 2d.(e-c) = 2d.e, where c is the origin of sphere & e is the ray origin, in model space
+  // Note: origin of sphere in model space, c, is the zero vector & camera camera position
+  double B = 2*dot(&(model_ray->d), &(model_ray->p0));
+
+
+  // C = (e-c).(e-c) - R^2 = (e).(e) - 1, where R is the radius of the sphere in model space
+  // Note: R = 1 in model space
+  double C = dot(&(model_ray->p0), &(model_ray->p0)) - 1;
+	
+  // delta is the discriminant in the quadratic equation, i.e. b^2-4ac
+	double delta = B*B - 4*A*C;
+	if(delta==0){ //only 1 intersection
+		*lambda = -B/(2*A);
+	}
+  else if(delta>0){ //2 intersections, determine the closest 1
+		double lambda1 = (-B + sqrt(delta))/(2*A);
+		double lambda2 = (-B - sqrt(delta))/(2*A);
+		if(lambda1<= 0 && lambda2 < 0) {
+			*lambda = 0;
+		} 
+    else if(lambda1 > 0 && lambda2 < 0) {
+			*lambda = lambda1;
+		} 
+    else if(lambda1 > lambda2 && lambda2 > 0) {
+			*lambda = lambda2;
+    }
+	}
+  else{
+		//no intersection
+		*lambda = 0;
+	}
+
 }
 
 void loadTexture(struct object3D *o, const char *filename)
