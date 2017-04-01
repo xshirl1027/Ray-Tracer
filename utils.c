@@ -204,33 +204,43 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   struct ray3D * model_ray =(struct ray3D *)malloc(sizeof(struct ray3D));
   struct point3D * transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
   
+  memcpy(model_ray, ray, sizeof(struct ray3D));
+ //transforming ray origin and direction vector from world to model view, using T_inv
+  matVecMult(plane->Tinv, &(model_ray->p0));
+  matVecMult(plane->Tinv, &(model_ray->d));
+  model_ray->d.pw = 0;
+ //normalizing ray direction and origin
+  normalize(&(model_ray->d));
+  model_ray->d.pw = 0;
   //transform ray using inverse transform
-  rayTransform(ray, model_ray, plane);
-  //setting n as per model view
-  n->px = 0;
-  n->py = 1;
-  n->pz = 0;
-  n->pw = 0;
+  //rayTransform(ray, model_ray, plane);
 	
   //calculating lambda
 	*lambda = -(model_ray->p0.py)/model_ray->d.py;
    //printf("model_ray %f %f %f\n", model_ray->p0.py,model_ray->p0.pz, model_ray->p0.px);
   //checking lambda and making sure ray is not parallel to plane
-  if(*lambda <=0 || model_ray->d.pz == 0)
+  if(*lambda <=0)
   {
     *lambda = 0;
   }
   else
   { 
     //finding point of intersection
-    model_ray->rayPos(model_ray, *lambda, p); 
-
+    //model_ray->rayPos(model_ray, *lambda, p); 
+    p->px = model_ray->p0.px + model_ray->d.px* *lambda;
+    p->pz = model_ray->p0.pz + model_ray->d.pz* *lambda;
+    p->py = 0;
+ 	 p->pw = 1;
     //checking if point within bound & transforming from model space to world space
-    if (-1 <=p->px && p->px<= 1&& -1 <=p->pz && p->pz <=1) 
+    if (-0.5 <=p->px && p->px<= 0.5 && -0.5 <=p->pz && p->pz <=0.5) 
     { 
   		//printf("before transform (%f, %f, %f)\n", p->px, p->py, p->pz);
       matVecMult(plane->T, p); //converting p from model to world
-      p->pw = 1;
+       //setting n as per model view
+  		n->px = 0;
+  		n->py = 1;
+  		n->pz = 0;
+  		n->pw = 0;
 		//*lambda = -(ray->p0.py)/ray->d.py;
       //printf("it intersected at world(%f, %f, %f)\n", p->px, p->py, p->pz);
       //transforming normal using inverse transpose of model to world matix

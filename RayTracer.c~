@@ -241,6 +241,8 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   	//while(curr_obj != NULL){
 	    curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
 	    if(*lambda>0){
+	    	//matVecMult(curr_obj->T, p);
+	    	
 	    	//printf("it intersected at world(%f, %f, %f)\n", p->px, p->py, p->pz);
 	    //printf("%f\n", *lambda);
 	    struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
@@ -254,8 +256,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 	      //printf("R: %f G: %f B: %f \n", Os->col.R, Os->col.G, Os->col.B);
 	    }
 	 }
-	   // curr_obj = curr_obj->next;
-	//}
+
 
 }
 
@@ -434,7 +435,7 @@ int main(int argc, char *argv[])
 	 // Camera center is at (0,0,-1)
 	 e.px=0;
 	 e.py=0;
-	 e.pz=7;
+	 e.pz=-3;
 	 e.pw=1;
 
 	 // To define the gaze vector, we choose a point 'pc' in the scene that
@@ -520,8 +521,8 @@ int main(int argc, char *argv[])
 		matVecMult(cam->C2W, origin);
 		origin->pw=1;
 		ray = newRay(origin, &d);
-		//printf("%f,%f, %f\n", ray->d.px,ray->d.py, ray->d.pz);
-		printf("dist of ray: %f", length(&(ray->d)));
+		if(length(&(ray->d))<0)printf("%f,%f, %f\n", ray->d.px,ray->d.py, ray->d.pz);
+		//printf("dist of ray: %f", length(&(ray->d)));
 		rayTrace(ray, MAX_DEPTH, &col, NULL);
 
 		if(col.R!=0 && col.G!=0 && col.B!=0){
