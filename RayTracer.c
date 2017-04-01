@@ -238,9 +238,11 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   struct object3D *curr_obj;
   curr_obj = object_list;
   
-  	while(curr_obj != NULL){
+  	//while(curr_obj != NULL){
 	    curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
-	    //printf("%f", lambda);
+	    if(*lambda>0){
+	    	//printf("it intersected at world(%f, %f, %f)\n", p->px, p->py, p->pz);
+	    //printf("%f\n", *lambda);
 	    struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
 	    memcpy(dist_v, p, sizeof(struct point3D));
 	    subVectors(&(ray->p0), dist_v);
@@ -251,8 +253,9 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 	      *obj = curr_obj;
 	      //printf("R: %f G: %f B: %f \n", Os->col.R, Os->col.G, Os->col.B);
 	    }
-	    curr_obj = curr_obj->next;
-	}
+	 }
+	   // curr_obj = curr_obj->next;
+	//}
 
 }
 
@@ -293,13 +296,13 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 		// 	*Os = malloc(sizeof(struct object3D));
 
 		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
-
+		//printf("lambda %f", lambda);
 //		if (obj != NULL){
 		if (lambda > 0){
 			col->R = obj->col.R;
 			col->G = obj->col.G;
 			col->B = obj->col.B;
-
+			//printf("color: %f,%f,%f\n", col->R, col->G , col->B );
 		}
 		else
 		{
@@ -372,7 +375,7 @@ int main(int argc, char *argv[])
 	 struct colourRGB background;   // Background colour
 	 int i,j;			// Counters for pixel coordinates
 	 unsigned char *rgbIm;
-
+		int total = 0, total2 = 0;
 	 if (argc<5)
 	 {
 	  fprintf(stderr,"RayTracer: Can not parse input parameters\n");
@@ -511,22 +514,33 @@ int main(int argc, char *argv[])
 		memcpy(&d, &pc, sizeof(struct point3D));
 		subVectors(origin, &d);
 		d.pw=0;
-		normalize(&d);
 		matVecMult(cam->C2W, &d);
+		d.pw = 0;
 		normalize(&d);
 		matVecMult(cam->C2W, origin);
+		origin->pw=1;
 		ray = newRay(origin, &d);
 		//printf("%f,%f, %f\n", ray->d.px,ray->d.py, ray->d.pz);
+		printf("dist of ray: %f", length(&(ray->d)));
 		rayTrace(ray, MAX_DEPTH, &col, NULL);
 
+		if(col.R!=0 && col.G!=0 && col.B!=0){
+		total = total +1;
+		((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min((cam->wl+ i*du + du/2)*255, 255);
+		((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min((cam->wt + j*dv + dv/2)*255, 255);
+		((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);		
+		}else{
+			total2++;
 		((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
 		((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
 		((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
-		// printf("R: %u G: %u B: %u \n", ((unsigned char*)im->rgbdata)[(j*sx + i)*3], ((unsigned char*)im->rgbdata)[(j*sx + i)*3+1], ((unsigned char*)im->rgbdata)[(j*sx + i)*3+2]);
+	}
+
+		//printf("R: %u G: %u B: %u \n", ((unsigned char*)im->rgbdata)[(j*sx + i)*3], ((unsigned char*)im->rgbdata)[(j*sx + i)*3+1], ((unsigned char*)im->rgbdata)[(j*sx + i)*3+2]);
 	    // printf("R: %f G: %f B: %f \n", col.R, col.G, col.B);
 	  } // end for i
 	 } // end for j
-
+	printf("pixel %d pixel 2 %d\n",total, total2);
 	 fprintf(stderr,"\nDone!\n");
 	 //printmatrix(object_list[0].T);
 	 //printmatrix(object_list[0].Tinv);

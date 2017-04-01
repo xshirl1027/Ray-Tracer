@@ -71,18 +71,16 @@ inline void rayTransform(struct ray3D *ray_orig, struct ray3D *ray_transformed, 
  // TO DO: Complete this function
  ///////////////////////////////////////////
  //copying original ray into transformed ray holder
-  ray_transformed = (struct ray3D*)malloc(sizeof(struct ray3D*));
-  printf("ray_orig: %f,%f,%f\n", ray_orig->d.px, ray_orig->d.py, ray_orig->d.pz);
-  printf("ray_transformed: %f,%f,%f\n", ray_transformed->d.px, ray_transformed->d.py, ray_transformed->d.pz);
-
-
+ // printf("ray_orig: %f,%f,%f\n", ray_orig->d.px, ray_orig->d.py, ray_orig->d.pz);
   memcpy(ray_transformed, ray_orig, sizeof(struct ray3D));
- 
+  
  //transforming ray origin and direction vector from world to model view, using T_inv
   matVecMult(obj->Tinv, &(ray_transformed->p0));
   matVecMult(obj->Tinv, &(ray_transformed->d));
+  ray_transformed->d.pw = 0;
  //normalizing ray direction and origin
   normalize(&(ray_transformed->d));
+  ray_transformed->d.pw = 0;
 }
 
 inline void normalTransform(struct point3D *n_orig, struct point3D *n_transformed, struct object3D *obj)
@@ -101,6 +99,7 @@ inline void normalTransform(struct point3D *n_orig, struct point3D *n_transforme
  //       using linear algebra basics: transpose(A) = transpose(A^(-1))
  transpose(obj->T, T_transpose); //finding transpose of model to world matrix
  matVecMult(T_transpose, n_transformed); //transforming n from model to world
+ n_transformed->pw=0;
  normalize(n_transformed); //normalizing transformation of n
 }
 
@@ -207,7 +206,6 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   
   //transform ray using inverse transform
   rayTransform(ray, model_ray, plane);
-  
   //setting n as per model view
   n->px = 0;
   n->py = 1;
@@ -216,7 +214,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
 	
   //calculating lambda
 	*lambda = -(model_ray->p0.py)/model_ray->d.py;
-
+   //printf("model_ray %f %f %f\n", model_ray->p0.py,model_ray->p0.pz, model_ray->p0.px);
   //checking lambda and making sure ray is not parallel to plane
   if(*lambda <=0 || model_ray->d.pz == 0)
   {
@@ -228,15 +226,18 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
     model_ray->rayPos(model_ray, *lambda, p); 
 
     //checking if point within bound & transforming from model space to world space
-    if ((p->px >= -1.0 && p->px <= 1.0) && (p->pz >= -1.0 && p->pz <= 1.0)) 
+    if (-1 <=p->px && p->px<= 1&& -1 <=p->pz && p->pz <=1) 
     { 
-  		//printf("it intersected at (%f, %f, %f)\n", p->px, p->py, p->pz);
-      matVecMult(plane->T,p); //converting p from model to world
-      
+  		//printf("before transform (%f, %f, %f)\n", p->px, p->py, p->pz);
+      matVecMult(plane->T, p); //converting p from model to world
+      p->pw = 1;
+		//*lambda = -(ray->p0.py)/ray->d.py;
+      //printf("it intersected at world(%f, %f, %f)\n", p->px, p->py, p->pz);
       //transforming normal using inverse transpose of model to world matix
       normalTransform(n, transformed_n, plane); 
       memcpy(n, transformed_n, sizeof(point3D)); //storing transformation from MtoW of n
-    }
+		//printf("%f\n", *lambda);
+	}
     else *lambda = 0;
   }
 }
