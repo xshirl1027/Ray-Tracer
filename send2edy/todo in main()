@@ -1,0 +1,50 @@
+for (j=0;j<sx;j++)		// For each of the pixels in the image
+{
+	for (i=0;i<sx;i++)
+	{
+		///////////////////////////////////////////////////////////////////
+		// TO DO - complete the code that should be in this loop to do the
+		//         raytracing!
+		///////////////////////////////////////////////////////////////////
+		
+		//from 418notes =: (wl+(i+0.5)\u0394u,wt+(j+0.5)\u0394v,f)
+		
+		d = (struct point3D*)malloc(sizeof(point3D)); //dir vector
+		pc = (struct point3D*)malloc(sizeof(point3D)); //image plane
+		struct point3D *origin = newPoint(0,0,0); //camera origin
+		//image plane
+		pc->px = cam->wl+ (i+0.5)*du;
+		pc->py = cam->wt + (j+0.5)*dv;
+		pc->pz = -1;
+		pc->pw = 1;
+
+		//bring image plane and origin to world
+		matVecMult(cam->C2W, pc);
+		matVecMult(cam->C2W, origin);
+		
+		//create ray in world space
+		memcpy(d, pc, sizeof(struct point3D));
+		subVectors(origin, d);
+		d->pw = 0;
+		ray = newRay(origin, d);
+				
+		if(length(&(ray->d))<0) //shouldn't happen
+			printf("%f,%f, %f\n", ray->d.px,ray->d.py, ray->d.pz);
+		
+		rayTrace(ray, MAX_DEPTH, &col, NULL);
+
+		//coloring the pixel with u and v values as per davids suggestion for debugging
+		if(col.R!=0 && col.G!=0 && col.B!=0){
+			total = total +1; //colored pixel count
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min((cam->wl+ i*du + du/2)*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min((cam->wt + j*dv + dv/2)*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);		
+		}else{
+			total2++; //black pixel count
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
+		}
+
+	} // end for i
+} // end for j

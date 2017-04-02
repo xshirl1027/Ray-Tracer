@@ -238,22 +238,16 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   struct object3D *curr_obj;
   curr_obj = object_list;
   
-  	//while(curr_obj != NULL){
+  	//while(curr_obj != NULL){ //comment out loop, just get just plane to render
 	    curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
 	    if(*lambda>0){
-	    	//matVecMult(curr_obj->T, p);
-	    	
-	    	//printf("it intersected at world(%f, %f, %f)\n", p->px, p->py, p->pz);
-	    //printf("%f\n", *lambda);
-	    struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
-	    memcpy(dist_v, p, sizeof(struct point3D));
-	    subVectors(&(ray->p0), dist_v);
-	    curr_len = length(dist_v);
-	    if ((min_dist > curr_len) && (curr_len > 0)){
-	    	//printf("assigning Os");
-	      min_dist = curr_len;
-	      *obj = curr_obj;
-	      //printf("R: %f G: %f B: %f \n", Os->col.R, Os->col.G, Os->col.B);
+	    	//struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
+	    	//memcpy(dist_v, p, sizeof(struct point3D));
+	    	//subVectors(&(ray->p0), dist_v);
+	    	curr_len = *lambda; //length(dist_v);
+	    	if ((min_dist > curr_len) && (curr_len > 0)){
+	      	min_dist = curr_len;
+	      	*obj = curr_obj;
 	    }
 	 }
 
@@ -291,21 +285,15 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	 } 
 	 else
 	 {
-	 	//printf("Depth is valid!\n");
-		// if (Os == NULL)
-		// 	printf("Os is NULL\n");
-		// 	*Os = malloc(sizeof(struct object3D));
-
 		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
-		//printf("lambda %f", lambda);
+
 //		if (obj != NULL){
-		if (lambda > 0){
+		if (lambda > 0){ //intersection == true, color it
 			col->R = obj->col.R;
 			col->G = obj->col.G;
 			col->B = obj->col.B;
-			//printf("color: %f,%f,%f\n", col->R, col->G , col->B );
 		}
-		else
+		else //darkness
 		{
 			col->R =0.0;
 			col->G =0.0;
@@ -369,7 +357,8 @@ int main(int argc, char *argv[])
 	 struct point3D g;
 	 struct point3D up;
 	 double du, dv;			// Increase along u and v directions for pixel coordinates
-	 struct point3D pc,d;		// Point structures to keep the coordinates of a pixel and
+	 struct point3D* pc;
+	 struct point3D* d;		// Point structures to keep the coordinates of a pixel and
 					// the direction or a ray
 	 struct ray3D *ray;		// Structure to keep the ray from e to a pixel
 	 struct colourRGB col;		// Return colour for raytraced pixels
@@ -504,27 +493,32 @@ int main(int argc, char *argv[])
 		// TO DO - complete the code that should be in this loop to do the
 		//         raytracing!
 		///////////////////////////////////////////////////////////////////
-		struct point3D *origin = newPoint(0,0,0);
-		pc.px = cam->wl+ i*du + du/2;
-		pc.py = cam->wt + j*dv + dv/2;
-		pc.pz = -1;
-		pc.pw = 1;
-		//printf("%f, %f, %f, %f\n", pc.px, pc.py, pc.pz, pc.pw);
+		
+		//from 418notes =: (wl+(i+0.5)Δu,wt+(j+0.5)Δv,f)
+		d = (struct point3D*)malloc(sizeof(point3D)); //dir vector
+		pc = (struct point3D*)malloc(sizeof(point3D)); //image plane
+		struct point3D *origin = newPoint(0,0,0); //camera origin
+		//image plane
+		pc->px = cam->wl+ (i+0.5)*du;
+		pc->py = cam->wt + (j+0.5)*dv;
+		pc->pz = -1;
+		pc->pw = 1;
 
-		// pc = *newPoint((-sx/2+ i + 0.5), (sx/2 -j-0.5), -1);
-		memcpy(&d, &pc, sizeof(struct point3D));
-		subVectors(origin, &d);
-		d.pw=0;
-		matVecMult(cam->C2W, &d);
-		d.pw = 0;
-		normalize(&d);
+		//bring image plane and origin to world
+		matVecMult(cam->C2W, pc);
 		matVecMult(cam->C2W, origin);
-		origin->pw=1;
-		ray = newRay(origin, &d);
-		if(length(&(ray->d))<0)printf("%f,%f, %f\n", ray->d.px,ray->d.py, ray->d.pz);
-		//printf("dist of ray: %f", length(&(ray->d)));
+		//create ray in world space
+		memcpy(d, pc, sizeof(struct point3D));
+		subVectors(origin, d);
+		d->pw = 0;
+		ray = newRay(origin, d);
+				
+		if(length(&(ray->d))<0) //not supposed to happen
+			printf("%f,%f, %f\n", ray->d.px,ray->d.py, ray->d.pz);
+		
 		rayTrace(ray, MAX_DEPTH, &col, NULL);
 
+		//coloring the pixel with u and v values as per davids suggestion for debugging
 		if(col.R!=0 && col.G!=0 && col.B!=0){
 		total = total +1;
 		((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min((cam->wl+ i*du + du/2)*255, 255);
@@ -537,8 +531,6 @@ int main(int argc, char *argv[])
 		((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
 	}
 
-		//printf("R: %u G: %u B: %u \n", ((unsigned char*)im->rgbdata)[(j*sx + i)*3], ((unsigned char*)im->rgbdata)[(j*sx + i)*3+1], ((unsigned char*)im->rgbdata)[(j*sx + i)*3+2]);
-	    // printf("R: %f G: %f B: %f \n", col.R, col.G, col.B);
 	  } // end for i
 	 } // end for j
 	printf("pixel %d pixel 2 %d\n",total, total2);
@@ -550,8 +542,8 @@ int main(int argc, char *argv[])
 	 imageOutput(im,output_name);
 
 	 // Exit section. Clean up and return.
-	 // cleanup(object_list,light_list);		// Object and light lists
-	 // deleteImage(im);				// Rendered image
+	  cleanup(object_list,light_list);		// Object and light lists
+	  deleteImage(im);				// Rendered image
 	 free(cam);					// camera view
 	 exit(0);
 }

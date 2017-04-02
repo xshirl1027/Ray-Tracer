@@ -209,15 +209,11 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   matVecMult(plane->Tinv, &(model_ray->p0));
   matVecMult(plane->Tinv, &(model_ray->d));
   model_ray->d.pw = 0;
- //normalizing ray direction and origin
   normalize(&(model_ray->d));
   model_ray->d.pw = 0;
-  //transform ray using inverse transform
-  //rayTransform(ray, model_ray, plane);
-	
+  
   //calculating lambda
 	*lambda = -(model_ray->p0.py)/model_ray->d.py;
-   //printf("model_ray %f %f %f\n", model_ray->p0.py,model_ray->p0.pz, model_ray->p0.px);
   //checking lambda and making sure ray is not parallel to plane
   if(*lambda <=0)
   {
@@ -227,26 +223,21 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   { 
     //finding point of intersection
     //model_ray->rayPos(model_ray, *lambda, p); 
-    p->px = model_ray->p0.px + model_ray->d.px* *lambda;
-    p->pz = model_ray->p0.pz + model_ray->d.pz* *lambda;
+    p->px = model_ray->p0.px + *lambda*model_ray->d.px;
+    p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
     p->py = 0;
  	 p->pw = 1;
     //checking if point within bound & transforming from model space to world space
-    if (-0.5 <=p->px && p->px<= 0.5 && -0.5 <=p->pz && p->pz <=0.5) 
+    if (-1 <=p->px && p->px<= 1 && -1 <=p->pz && p->pz <=1) 
     { 
-  		//printf("before transform (%f, %f, %f)\n", p->px, p->py, p->pz);
       matVecMult(plane->T, p); //converting p from model to world
-       //setting n as per model view
   		n->px = 0;
   		n->py = 1;
   		n->pz = 0;
   		n->pw = 0;
-		//*lambda = -(ray->p0.py)/ray->d.py;
-      //printf("it intersected at world(%f, %f, %f)\n", p->px, p->py, p->pz);
       //transforming normal using inverse transpose of model to world matix
       normalTransform(n, transformed_n, plane); 
-      memcpy(n, transformed_n, sizeof(point3D)); //storing transformation from MtoW of n
-		//printf("%f\n", *lambda);
+      memcpy(n, transformed_n, sizeof(point3D)); 
 	}
     else *lambda = 0;
   }
@@ -262,26 +253,18 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  /////////////////////////////////
 
 	struct ray3D *model_ray;
-	
-  //printf("(%f,%f,%f,%f),(%f,%f,%f,%f)\n", ray->p0.px,ray->p0.py,ray->p0.pz,ray->p0.pw, ray->d.px,ray->d.py,ray->d.pz,ray->d.pw);
 
   // transforming ray from world to model
   rayTransform(ray, model_ray, sphere);
-	
   // getting coefficients of sphere equation, i.e. A.t^2 + B.t + C - R^2 = 0 :
   // A = d.d, where d is the direction vector of ray in model space
   double A = dot(&(model_ray->d), &(model_ray->d));
-
-
   // B = 2d.(e-c) = 2d.e, where c is the origin of sphere & e is the ray origin, in model space
   // Note: origin of sphere in model space, c, is the zero vector & camera camera position
   double B = 2*dot(&(model_ray->d), &(model_ray->p0));
-
-
   // C = (e-c).(e-c) - R^2 = (e).(e) - 1, where R is the radius of the sphere in model space
   // Note: R = 1 in model space
   double C = dot(&(model_ray->p0), &(model_ray->p0)) - 1;
-	
   // delta is the discriminant in the quadratic equation, i.e. b^2-4ac
 	double delta = B*B - 4*A*C;
 	if(delta==0){ //only 1 intersection
