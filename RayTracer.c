@@ -520,16 +520,10 @@ int main(int argc, char *argv[])
 
 		//coloring the pixel with u and v values as per davids suggestion for debugging
 		if(col.R!=0 && col.G!=0 && col.B!=0){
-		total = total +1;
-		((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min((cam->wl+ i*du + du/2)*255, 255);
-		((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min((cam->wt + j*dv + dv/2)*255, 255);
-		((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);		
-		}else{
-			total2++;
-		((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
-		((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
-		((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
-	}
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
+		}
 
 	  } // end for i
 	 } // end for j
