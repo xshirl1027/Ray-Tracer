@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 	 // Here we set up the camera to be looking at the origin, so g=(0,0,0)-(0,0,-1)
 	 g.px=0;
 	 g.py=0;
-	 g.pz=1;
+	 g.pz=3;
 	 g.pw=0;
 
 	 // Define the 'up' vector to be the Y axis
