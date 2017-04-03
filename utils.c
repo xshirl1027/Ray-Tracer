@@ -224,8 +224,8 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
     //finding point of intersection
     //model_ray->rayPos(model_ray, *lambda, p); 
     p->px = model_ray->p0.px + *lambda*model_ray->d.px;
-    p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
-    p->py = 0;
+    p->pz = 0;
+    p->py = model_ray->p0.py + *lambda*model_ray->d.py;
  	 p->pw = 1;
     //checking if point within bound & transforming from model space to world space
     if (-1 <=p->px && p->px<= 1 && -1 <=p->py && p->py <=1) 
