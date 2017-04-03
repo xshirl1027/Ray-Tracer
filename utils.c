@@ -202,7 +202,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
 
   //transformation of ray and normal holder variables
   struct ray3D * model_ray =(struct ray3D *)malloc(sizeof(struct ray3D));
-  struct point3D * transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
+  struct point3D *transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
   
   memcpy(model_ray, ray, sizeof(struct ray3D));
  //transforming ray origin and direction vector from world to model view, using T_inv
@@ -223,8 +223,8 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   { 
     //finding point of intersection
     //model_ray->rayPos(model_ray, *lambda, p); 
-    p->px = model_ray->p0.px + *lambda*model_ray->d.px;
-    p->py = model_ray->p0.py + *lambda*model_ray->d.py;
+    p->px = model_ray->p0.px + (*lambda) * (model_ray->d.px);
+    p->py = model_ray->p0.py + (*lambda) * (model_ray->d.py);
 	p->pz = 0;
  	p->pw = 1;
     //checking if point within bound & transforming from model space to world space
@@ -268,6 +268,7 @@ void triangleIntersect(struct object3D *plane, struct ray3D *ray, double *lambda
   struct point3D *e1 = newPoint(-1, 0, 1); //p1
   struct point3D *e2 = newPoint(-1, 0, 1); //p1
   float det, inv_det, u, v, t;
+
   subVectors(p2, e1); //created triangle edges
   subVectors(p3, e2);
   
@@ -353,7 +354,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  // TO DO: Complete this function.
  /////////////////////////////////
 
-	struct ray3D *model_ray;
+	struct ray3D *model_ray = (struct ray3D *) malloc(sizeof(struct ray3D));
 
   // transforming ray from world to model
   rayTransform(ray, model_ray, sphere);

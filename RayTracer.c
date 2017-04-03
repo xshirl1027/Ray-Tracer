@@ -234,22 +234,27 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  /////////////////////////////////////////////////////////////
   double min_dist = 99999;
   double curr_len = 0;
-
+  double lam;
+  struct point3D *tp = (struct point3D *) malloc(sizeof(struct point3D));
+  struct point3D *tn = (struct point3D *) malloc(sizeof(struct point3D));
   struct object3D *curr_obj;
   curr_obj = object_list;
   
-  	//while(curr_obj != NULL){ //comment out loop, just get just plane to render
-	    curr_obj->intersect(curr_obj, ray, lambda, p, n, a, b);
-	    if(*lambda>0){
-	    	//struct point3D *dist_v = (struct point3D*)malloc(sizeof(struct point3D));
-	    	//memcpy(dist_v, p, sizeof(struct point3D));
-	    	//subVectors(&(ray->p0), dist_v);
-	    	curr_len = *lambda; //length(dist_v);
+  	while(curr_obj != NULL){ //comment out loop, just get just plane to render
+  		 
+	    curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
+	    if(lam>0){
+	    	curr_len = lam;
 	    	if ((min_dist > curr_len) && (curr_len > 0)){
 	      	min_dist = curr_len;
 	      	*obj = curr_obj;
-	    }
-	 }
+	      	*lambda = lam;
+	      	p = tp;
+	      	n = tn;
+	    	}
+	 	}
+	 	curr_obj = curr_obj->next;
+	}
 
 
 }
@@ -275,7 +280,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	 struct point3D p, tp;	// Intersection point
 	 struct point3D n, tn;	// Normal at intersection
 	 struct colourRGB I;	// Colour returned by shading function
-
+	
 	 if (depth>MAX_DEPTH)	// Max recursion depth reached. Return invalid colour.
 	 {
 	  col->R=-1;
@@ -286,7 +291,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	 else
 	 {
 		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
-
+				
 //		if (obj != NULL){
 		if (lambda > 0){ //intersection == true, color it
 			col->R = obj->col.R;
@@ -299,44 +304,40 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 			col->G =0.0;
 			col->B =0.0;
 		}
-		// struct ray3D lightray;
-		// struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
-		// if(lambda > 0)
-		// {	
-
-		// 	struct pointLS *curr_light = light_list;
-		// 	while (curr_light!=NULL)
-		// 	{
-		// 		memcpy(dir, &curr_light->p0, sizeof(struct point3D));
-		// 		subVectors(&p, dir);
-		// 		lightray = *(newRay(&p, dir));
-		// 		normalize(&(lightray.d));
-		// 		findFirstHit(&lightray, &lambda, Os, &obj, &p, &n, &a, &b);
-		// 		//printf("%f", lambda);
-		// 		if(lambda <= 0){
-		// 			//printf("intersected!!!");
-		// 			rtShade(obj, &p, &n, ray, depth, a, b, &I);
+		/*struct ray3D* lightray;
+		struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
+		 if(lambda > 0)
+		 {	
+		 	struct pointLS *curr_light = light_list;
+		 	while (curr_light!=NULL)
+		 	{
+				memcpy(dir, &curr_light->p0, sizeof(struct point3D));
+				subVectors(&p, dir);
+				lightray = newRay(&p, dir);
+				normalize(&(lightray->d));
+				findFirstHit(lightray, &lambda, Os, &obj, &p, &n, &a, &b);
+				//printf("%f", lambda);
+				if(lambda <= 0){
+					//printf("intersected!!!");
+					rtShade(obj, &p, &n, ray, depth, a, b, &I);
 					
-		// 			col->R += I.R;
-		// 			col->G += I.G;
-		// 			col->B += I.B;
-		// 			printf("RGB %f, %f, %f\n", col->R, col->G, col->B);
+					col->R += I.R;
+					col->G += I.G;
+					col->B += I.B;
+					//printf("RGB %f, %f, %f\n", col->R, col->G, col->B);
 					
-		// 		}
-		// 		curr_light = curr_light->next;
-		// 	}
+				}
+				curr_light = curr_light->next;
+			}
 
-			//if(depth>0){
-				//create reflected ray
-				//rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object3D *Os)
+			if(depth>0){
+				create reflected ray
+				rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object3D *Os)
+			}
+			
+		}*/
 
-			//}
-		// }
-		
-	 }
-	 
-
-	
+	 }	
  ///////////////////////////////////////////////////////
  // TO DO: Complete this function. Refer to the notes
  // if you are unsure what to do here.
@@ -445,7 +446,7 @@ int main(int argc, char *argv[])
 	 // and a focal length of -1 (why? where is the image plane?)
 	 // Note that the top-left corner of the window is at (-2, 2)
 	 // in camera coordinates.
-	 cam=setupView(&e, &g, &up, -3, -2, 2, 4);
+	 cam=setupView(&e, &g, &up, -3, -1, 1, 2);
 
 	 if (cam==NULL)
 	 {
@@ -482,7 +483,7 @@ int main(int argc, char *argv[])
 	 fprintf(stderr,"World to camera conversion matrix\n");
 	 printmatrix(cam->W2C);
 	 fprintf(stderr,"\n");
-
+	 #pragma omp parallel for
 	 //fprintf(stderr,"Rendering row: ");
 	 for (j=0;j<sx;j++)		// For each of the pixels in the image
 	 {
@@ -519,11 +520,11 @@ int main(int argc, char *argv[])
 		rayTrace(ray, MAX_DEPTH, &col, NULL);
 
 		//coloring the pixel with u and v values as per davids suggestion for debugging
-		if(col.R!=0 && col.G!=0 && col.B!=0){
+		//if(col.R!=0 && col.G!=0 && col.B!=0){
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
-		}
+		//}
 
 	  } // end for i
 	 } // end for j
