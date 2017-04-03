@@ -232,8 +232,8 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
     { 
       matVecMult(plane->T, p); //converting p from model to world
   		n->px = 0;
-  		n->py = 1;
-  		n->pz = 0;
+  		n->py = 0;
+  		n->pz = -1;
   		n->pw = 0;
       //transforming normal using inverse transpose of model to world matix
       normalTransform(n, transformed_n, plane); 
