@@ -206,8 +206,8 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   
   memcpy(model_ray, ray, sizeof(struct ray3D));
  //transforming ray origin and direction vector from world to model view, using T_inv
-  //matVecMult(plane->Tinv, &(model_ray->p0));
-  //matVecMult(plane->Tinv, &(model_ray->d));
+  matVecMult(plane->Tinv, &(model_ray->p0));
+  matVecMult(plane->Tinv, &(model_ray->d));
   model_ray->d.pw = 0;
   normalize(&(model_ray->d));
   model_ray->d.pw = 0;
