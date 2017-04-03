@@ -228,7 +228,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
     p->py = 0;
  	 p->pw = 1;
     //checking if point within bound & transforming from model space to world space
-    if (-1 <=p->px && p->px<= 1 && -1 <=p->pz && p->pz <=1) 
+    if (-1 <=p->px && p->px<= 1 && -1 <=p->py && p->py <=1) 
     { 
       matVecMult(plane->T, p); //converting p from model to world
   		n->px = 0;
