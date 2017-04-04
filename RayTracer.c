@@ -243,7 +243,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   	while(curr_obj != NULL){ //comment out loop, just get just plane to render
   		 
 	    curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
-	    if(lam>0){
+	    if(lam>0 && curr_obj!=Os){
 	    	curr_len = lam;
 	    	if ((min_dist > curr_len) && (curr_len > 0)){
 	      	min_dist = curr_len;
@@ -275,7 +275,8 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 
 	 double lambda;		// Lambda at intersection
 	 double a,b;		// Texture coordinates
-	 struct object3D *obj;	// Pointer to object at intersection
+	 struct object3D *obj;
+	 struct object3D *obj2;	// Pointer to object at intersection
 	 struct point3D p, tp;	// Intersection point
 	 struct point3D n, tn;	// Normal at intersection
 	 struct colourRGB I;	// Colour returned by shading function
@@ -304,7 +305,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				dir->pw = 0;
 				lightray = newRay(&p, dir);
 				normalize(&(lightray->d));
-				findFirstHit(lightray, &lambda, Os, &obj, &p, &n, &a, &b);
+				findFirstHit(lightray, &lambda, obj, &obj2, &p, &n, &a, &b);
 				//printf("p %f %f %f \n", p.px,p.py,p.pz);
 				if(lambda <= 0){
 					//printf("intersected!!!");
