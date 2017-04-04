@@ -246,11 +246,11 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 			if(lam>0 & obj!=NULL){
 				curr_len = lam;
 				if ((min_dist > curr_len) && (curr_len > 0)){
-				min_dist = curr_len;
-				*obj = curr_obj;
-				*lambda = lam;
-				memcpy(p, tp, sizeof(struct point3D));
-				memcpy(n, tn, sizeof(struct point3D));
+					min_dist = curr_len;
+					*obj = curr_obj;
+					*lambda = lam;
+					memcpy(p, tp, sizeof(struct point3D));
+					memcpy(n, tn, sizeof(struct point3D));
 				}
 			}
 	 	}
@@ -308,7 +308,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				normalize(&(lightray->d));
 				findFirstHit(lightray, &shadowlam, obj, NULL, &p, &n, &a, &b);
 				//printf("p %f %f %f \n", p.px,p.py,p.pz);
-				if(shadowlam <= 0){
+				if(shadowlam <=0){
 					//printf("intersected!!!");
 					//rtShade(obj, &p, &n, ray, depth, a, b, &I);
 					
@@ -321,6 +321,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 					col->R = 0;
 					col->G = 0;
 					col->B = 0;
+					printf("it never gets here\n");
 				}
 				//curr_light = curr_light->next;
 			//}
