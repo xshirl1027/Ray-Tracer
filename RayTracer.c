@@ -241,17 +241,18 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   curr_obj = object_list;
   *lambda = 0;	
   	while(curr_obj != NULL){ //comment out loop, just get just plane to render
-  		 
-	    curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
-	    if(lam>0 && curr_obj!=Os){
-	    	curr_len = lam;
-	    	if ((min_dist > curr_len) && (curr_len > 0)){
-	      	min_dist = curr_len;
-	      	*obj = curr_obj;
-	      	*lambda = lam;
-	      	memcpy(p, tp, sizeof(struct point3D));
-	      	memcpy(n, tn, sizeof(struct point3D));
-	    	}
+  		if(curr_obj!=Os){ 
+			curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
+			if(lam>0){
+				curr_len = lam;
+				if ((min_dist > curr_len) && (curr_len > 0)){
+				min_dist = curr_len;
+				*obj = curr_obj;
+				*lambda = lam;
+				memcpy(p, tp, sizeof(struct point3D));
+				memcpy(n, tn, sizeof(struct point3D));
+				}
+			}
 	 	}
 	 	curr_obj = curr_obj->next;
 	}
