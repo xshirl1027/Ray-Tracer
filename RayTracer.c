@@ -252,7 +252,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 					memcpy(p, tp, sizeof(struct point3D));
 					memcpy(n, tn, sizeof(struct point3D));
 				}
-			}else if(lam>0 && obj==NULL{
+			}else if(lam>0 && obj==NULL){
 				*lambda = lam;
 			}
 	 	}
