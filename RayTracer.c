@@ -274,7 +274,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
  // ray originates.
  //
 
-	 double lambda;		// Lambda at intersection
+	 double lambda, shadowlam;		// Lambda at intersection
 	 double a,b;		// Texture coordinates
 	 struct object3D *obj;
 	 struct object3D *obj2;	// Pointer to object at intersection
@@ -306,9 +306,9 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				dir->pw = 0;
 				lightray = newRay(&p, dir);
 				normalize(&(lightray->d));
-				findFirstHit(lightray, &lambda, obj, &obj2, &p, &n, &a, &b);
+				findFirstHit(lightray, &shadowlam, obj, &obj2, &p, &n, &a, &b);
 				//printf("p %f %f %f \n", p.px,p.py,p.pz);
-				if(lambda <= 0){
+				if(shadowlam <= 0){
 					//printf("intersected!!!");
 					rtShade(obj, &p, &n, ray, depth, a, b, &I);
 					
