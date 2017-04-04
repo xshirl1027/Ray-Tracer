@@ -310,9 +310,9 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 					//printf("intersected!!!");
 					rtShade(obj, &p, &n, ray, depth, a, b, &I);
 					
-					col->R += I.R;
-					col->G += I.G;
-					col->B += I.B;
+					col->R = obj->col.R;
+					col->G = obj->col.G;
+					col->B = obj->col.B;
 					//printf("RGB %f, %f, %f\n", col->R, col->G, col->B);
 					
 				}else{ //don't color the shadow
