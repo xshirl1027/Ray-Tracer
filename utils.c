@@ -223,10 +223,10 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   { 
     //finding point of intersection
     //model_ray->rayPos(model_ray, *lambda, p); 
-    p->px = model_ray->p0.px + (*lambda) * (model_ray->d.px);
-    p->py = model_ray->p0.py + (*lambda) * (model_ray->d.py);
-	p->pz = 0;
- 	p->pw = 1;
+    	p->px = model_ray->p0.px + (*lambda) * (model_ray->d.px);
+    	p->py = model_ray->p0.py + (*lambda) * (model_ray->d.py);
+		p->pz = 0;
+ 		p->pw = 1;
     //checking if point within bound & transforming from model space to world space
     if (-1 <=p->px && p->px<= 1 && -1 <=p->py && p->py <=1) 
     { 
@@ -358,7 +358,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
 
   // transforming ray from world to model
   rayTransform(ray, model_ray, sphere);
-  // getting coefficients of sphere equation, i.e. A.t^2 + B.t + C - R^2 = 0 :
+  // getting coefficiennormalTransform(n, transformed_n, plane); ts of sphere equation, i.e. A.t^2 + B.t + C - R^2 = 0 :
   // A = d.d, where d is the direction vector of ray in model space
   double A = dot(&(model_ray->d), &(model_ray->d));
   // B = 2d.(e-c) = 2d.e, where c is the origin of sphere & e is the ray origin, in model space
@@ -388,6 +388,16 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   else{
 		//no intersection
 		*lambda = 0;
+	}
+	if(lambda>0){
+	 	p->px = ray->p0.px + *lambda*ray->d.px;
+    	p->pz = ray->p0.pz + *lambda*ray->d.pz;
+    	p->py = 0;
+ 	 	p->pw = 1;
+ 	 	memcpy(n, p, sizeof(point3D));
+ 	 	n->pw=0;
+ 	 	normalTransform(n, n, sphere);
+ 	 	//normal is transpose(p - ray->p0)
 	}
 
 }

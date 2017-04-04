@@ -239,7 +239,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
   struct point3D *tn = (struct point3D *) malloc(sizeof(struct point3D));
   struct object3D *curr_obj;
   curr_obj = object_list;
-  
+  *lambda = 0;	
   	while(curr_obj != NULL){ //comment out loop, just get just plane to render
   		 
 	    curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
@@ -249,13 +249,12 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 	      	min_dist = curr_len;
 	      	*obj = curr_obj;
 	      	*lambda = lam;
-	      	p = tp;
-	      	n = tn;
+	      	memcpy(p, tp, sizeof(struct point3D));
+	      	memcpy(n, tn, sizeof(struct point3D));
 	    	}
 	 	}
 	 	curr_obj = curr_obj->next;
 	}
-
 
 }
 
@@ -294,29 +293,19 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				
 //		if (obj != NULL){
 		if (lambda > 0){ //intersection == true, color it
-			col->R = obj->col.R;
-			col->G = obj->col.G;
-			col->B = obj->col.B;
-		}
-		else //darkness
-		{
-			col->R =0.0;
-			col->G =0.0;
-			col->B =0.0;
-		}
-		/*struct ray3D* lightray;
-		struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
-		 if(lambda > 0)
-		 {	
+
+			struct ray3D* lightray;
+			struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
 		 	struct pointLS *curr_light = light_list;
-		 	while (curr_light!=NULL)
-		 	{
-				memcpy(dir, &curr_light->p0, sizeof(struct point3D));
+		 	//while (curr_light!=NULL)
+		 	//{
+				memcpy(dir, &(curr_light->p0), sizeof(struct point3D));
 				subVectors(&p, dir);
+				dir->pw = 0;
 				lightray = newRay(&p, dir);
 				normalize(&(lightray->d));
 				findFirstHit(lightray, &lambda, Os, &obj, &p, &n, &a, &b);
-				//printf("%f", lambda);
+				//printf("p %f %f %f \n", p.px,p.py,p.pz);
 				if(lambda <= 0){
 					//printf("intersected!!!");
 					rtShade(obj, &p, &n, ray, depth, a, b, &I);
@@ -326,16 +315,28 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 					col->B += I.B;
 					//printf("RGB %f, %f, %f\n", col->R, col->G, col->B);
 					
+				}else{ //don't color the shadow
+					col->R = 0;
+					col->G =0;
+					col->B =0;
 				}
-				curr_light = curr_light->next;
-			}
+				//curr_light = curr_light->next;
+			//}
 
-			if(depth>0){
-				create reflected ray
+			/*if(depth>0){
+				//create reflected ray
 				rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object3D *Os)
-			}
+			}*/
 			
-		}*/
+		
+		}
+		else //darkness
+		{
+			col->R =0.0;
+			col->G =0.0;
+			col->B =0.0;
+		}
+
 
 	 }	
  ///////////////////////////////////////////////////////
