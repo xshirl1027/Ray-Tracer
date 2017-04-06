@@ -197,13 +197,13 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
 
  double ambR, ambG, ambB, difR, difG, difB, spcR, spcG, spcB;
 
- /*ambR = (obj->alb.ra)*(R);
+ ambR = (obj->alb.ra)*(R);
  ambG = (obj->alb.ra)*(G);
  ambB = (obj->alb.ra)*(B);
 
  difR = (obj->alb.rd)*(max(0.0, comp))*(R);
  difG = (obj->alb.rd)*(max(0.0, comp))*(G);
- difB = (obj->alb.rd)*(max(0.0, comp))*(B);*/
+ difB = (obj->alb.rd)*(max(0.0, comp))*(B);
 
  spcR = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(R);
  spcG = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(G);
