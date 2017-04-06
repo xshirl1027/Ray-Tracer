@@ -308,11 +308,11 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				dir->pw = 0;
 				lightray = newRay(&p, dir);
 				normalize(&(lightray->d));
-				findFirstHit(lightray, &shadowlam, obj, NULL, &p, &n, &a, &b);
+				findFirstHit(lightray, &shadowlam, obj, NULL, &tp, &tn, &a, &b);
 				//printf("p %f %f %f \n", p.px,p.py,p.pz);
 				if(shadowlam <=0){
 					//printf("intersected!!!");
-					rtShade(obj, &p, &n, ray, depth, a, b, &I);
+					rtShade(obj, &tp, &tn, ray, depth, a, b, &I);
 					
 					col->R = obj->col.R;
 					col->G = obj->col.G;
@@ -323,6 +323,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 					col->R = 0;
 					col->G = 0;
 					col->B = 0;
+					printf("it never gets here\n");
 				}
 				//curr_light = curr_light->next;
 			//}
