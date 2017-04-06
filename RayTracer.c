@@ -312,7 +312,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				//printf("p %f %f %f \n", p.px,p.py,p.pz);
 				if(shadowlam <=0){
 					//printf("intersected!!!");
-					rtShade(obj, &tp, &tn, ray, depth, a, b, &I);
+					//rtShade(obj, &tp, &tn, ray, depth, a, b, &I);
 					
 					col->R = obj->col.R;
 					col->G = obj->col.G;
