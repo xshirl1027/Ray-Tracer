@@ -197,13 +197,13 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
 
  double ambR, ambG, ambB, difR, difG, difB, spcR, spcG, spcB;
 
- ambR = (obj->alb.ra)*(R);
+ /*ambR = (obj->alb.ra)*(R);
  ambG = (obj->alb.ra)*(G);
  ambB = (obj->alb.ra)*(B);
 
  difR = (obj->alb.rd)*(max(0.0, comp))*(R);
  difG = (obj->alb.rd)*(max(0.0, comp))*(G);
- difB = (obj->alb.rd)*(max(0.0, comp))*(B);
+ difB = (obj->alb.rd)*(max(0.0, comp))*(B);*/
 
  spcR = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(R);
  spcG = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(G);
@@ -312,18 +312,17 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				//printf("p %f %f %f \n", p.px,p.py,p.pz);
 				if(shadowlam <=0){
 					//printf("intersected!!!");
-					//rtShade(obj, &p, &n, ray, depth, a, b, &I);
+					rtShade(obj, &p, &n, ray, depth, a, b, &I);
 					
-					col->R = obj->col.R;
-					col->G = obj->col.G;
-					col->B = obj->col.B;
+					col->R += I.R;//obj->col.R;
+					col->G += I.G;//obj->col.G;
+					col->B += I.B;//obj->col.B;
 					//printf("RGB %f, %f, %f\n", col->R, col->G, col->B);
 					
 				}else{ //don't color the shadow
 					col->R = 0;
 					col->G = 0;
 					col->B = 0;
-					printf("it never gets here\n");
 				}
 				//curr_light = curr_light->next;
 			//}
