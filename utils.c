@@ -97,7 +97,7 @@ inline void normalTransform(struct point3D *n_orig, struct point3D *n_transforme
 
  // Note: "inverse transpose of model to world matrix", i.e. transpose(T^(-1)) == transpose(T)
  //       using linear algebra basics: transpose(A) = transpose(A^(-1))
- transpose(obj->T, T_transpose); //finding transpose of model to world matrix
+ transpose(obj->Tinv, T_transpose); //finding transpose of model to world matrix
  matVecMult(T_transpose, n_transformed); //transforming n from model to world
  n_transformed->pw=0;
  normalize(n_transformed); //normalizing transformation of n
