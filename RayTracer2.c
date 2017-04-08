@@ -122,11 +122,14 @@ void buildScene(void)
  int i,j;
  float tx =0, ty = 15.5, tz=-5.5;
  //addAreaLight(1, 1, 0, -1, 0, 0, 15.5, -5.5, 4, 4, 0.95, 0.95, 0.95, &object_list, &light_list);
+
 	for (i=0; i<lx; i++){
  		for(j=0; j<ly; j++){
-			p.px=i/5;
+ 			double r = (double)rand() / (double)RAND_MAX ; //generate random double (0-1)
+			r = r/5; //random offset
+			p.px=i*r;
  			p.py=15.5;
- 			p.pz=-5.5- j/5;
+ 			p.pz=-5.5- j*r;
  			p.pw=1;
  			l=newPLS(&p,0.95,0.95,0.95);
  			insertPLS(l,&light_list);
