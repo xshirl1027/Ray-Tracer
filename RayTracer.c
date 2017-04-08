@@ -207,7 +207,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  col->G = (amb + dif +spc);
  col->B = (amb+ dif +spc);
  
- ray->p0 = p;
+ ray->p0 = *p;
  ray->d.px = refl_lv->px;
  ray->d.py = refl_lv->py;
  ray->d.pz = refl_lv->pz;
