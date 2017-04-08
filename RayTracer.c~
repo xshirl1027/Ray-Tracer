@@ -82,12 +82,12 @@ void buildScene(void)
  invert(&o->T[0][0],&o->Tinv[0][0]);		// Very important! compute
 						// and store the inverse
 						// transform for this object!
- insertObject
- (o,&object_list);			// Insert into object list
+
+ insertObject (o,&object_list);			// Insert into object list
  object_list_size += 1;
 
  // Let's add a couple spheres
- o=newSphere(.05,.95,.35,.35,1,.25,.25,1,1,6);
+ o=newSphere(.05,.95,.35,.35,1,.25,.25,1,1,35);
  Scale(o,.75,.5,1.5);
  RotateY(o,PI/2);
  Translate(o,-1.45,1.1,3.5);
@@ -95,7 +95,7 @@ void buildScene(void)
  insertObject(o,&object_list);
  object_list_size += 1;
 
- o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,6);
+ o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,35);
  Scale(o,.5,2.0,1.0);
  RotateZ(o,PI/1.5);
  Translate(o,1.75,1.25,5.0);
@@ -162,57 +162,54 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  // details about the shading model.
  //////////////////////////////////////////////////////////////
 
- struct point3D *Lv;
- struct point3D *Rv;
- struct point3D *Vv;
- Lv = (struct point3D*)malloc(sizeof(struct point3D));
- Rv = (struct point3D*)malloc(sizeof(struct point3D));
- Vv = (struct point3D*)malloc(sizeof(struct point3D));
 
- memcpy(&light_list->p0, Lv, sizeof(struct point3D)); // index through light list later!!!
- subVectors(p,Lv);
- Lv->px = (-1)*(Lv->px);
- Lv->py = (-1)*(Lv->py);
- Lv->pz = (-1)*(Lv->pz);
- Lv->pw = (-1)*(Lv->pw);
- normalize(Lv);
- normalize(n);
+ struct point3D *refl_lv = (struct point3D*)malloc(sizeof(struct point3D));
+ struct point3D *t = (struct point3D*)malloc(sizeof(struct point3D)); 
+ struct point3D *cam_dir = (struct point3D*)malloc(sizeof(struct point3D));
+ struct point3D *pl_vector = (struct point3D*)malloc(sizeof(struct point3D));
+ struct pointLS curr_light = *light_list;
+ double amb, dif, spc, rdmax, spc_max;
+ double dot_prod =0;
+  
+ memcpy(pl_vector, &(curr_light.p0),sizeof(struct point3D)); // index through light list later!!!
+ memcpy(cam_dir, &(ray->p0), sizeof(struct point3D)); 
+ subVectors(p, pl_vector);
+ subVectors(p, cam_dir);
 
- double comp = dot(Lv,n);
- Rv->px = 2*comp*(n->px);
- Rv->py = 2*comp*(n->py);
- Rv->pz = 2*comp*(n->pz);
- Rv->pw = 2*comp*(n->pw);
- subVectors(Lv,Rv);
- Rv->px = (-1)*(Rv->px);
- Rv->py = (-1)*(Rv->py);
- Rv->pz = (-1)*(Rv->pz);
- Rv->pw = (-1)*(Rv->pw);
- normalize(Rv);
- Vv->px = (ray->p0.px)-(p->px); 
- Vv->py = (ray->p0.py)-(p->py);
- Vv->pz = (ray->p0.pz)-(p->pz);
- Vv->pw = (ray->p0.pw)-(p->pw);
- normalize(Vv);
-
- double ambR, ambG, ambB, difR, difG, difB, spcR, spcG, spcB;
-
- ambR = (obj->alb.ra)*(R);
- ambG = (obj->alb.ra)*(G);
- ambB = (obj->alb.ra)*(B);
-
- difR = (obj->alb.rd)*(max(0.0, comp))*(R);
- difG = (obj->alb.rd)*(max(0.0, comp))*(G);
- difB = (obj->alb.rd)*(max(0.0, comp))*(B);
-
- spcR = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(R);
- spcG = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(G);
- spcB = (obj->alb.rs)*(max(0.0, pow(dot(Vv,Rv),(obj->shinyness))))*(B);
-
+ normalize(cam_dir);
+ normalize(pl_vector);
+ cam_dir->pw = 0;
+ pl_vector->pw = 0;
+ 
+ dot_prod = dot(n,pl_vector);
+ t->px = dot_prod*n->px;
+ t->py = dot_prod*n->py;
+ t->pz = dot_prod*n->pz;
+ t->pw = 0;
+ 
+ refl_lv->px = -pl_vector->px + (2* t->px);
+ refl_lv->py = -pl_vector->py + (2* t->py); //translate up 2t
+ refl_lv->pz = -pl_vector->pz + (2* t->pz);
+ refl_lv->pw = 0;
+ 
+ //normalize(refl_lv);
+ //normalize(n);
+ 
+ amb  =  (obj->alb.rg)*(obj->alb.ra); //remove +0.2 later, just want to see ambient 
+ rdmax = max(0,dot(pl_vector, n));
+  dif = (obj->alb.rd)*rdmax;
+  	spc_max = pow(max(0, dot(cam_dir,refl_lv)), obj->shinyness);
+  }
+ 
+ spc = (obj->alb.rs)*spc_max;
  // Be sure to update 'col' with the final colour computed here!
- col->R = (obj->alb.rg)*(ambR + difR + spcR);
- col->G = (obj->alb.rg)*(ambG + difG + spcG);
- col->B = (obj->alb.rg)*(ambB + difB + spcB);
+ col->R = (amb + dif +spc);
+ col->G = (amb + dif +spc);
+ col->B = (amb+ dif +spc);
+ memcpy(ray,refl_lv, sizeof(ray3D*));
+ 
+ //printf("RGB, %f, %f, %f\n",col->R,col->G,col->B); 
+ 
 }
 
 void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct object3D **obj, struct point3D *p, struct point3D *n, double *a, double *b)
@@ -227,34 +224,65 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
  // Os is the 'source' object for the ray we are processing, can be NULL, and is used to ensure we don't 
  // return a self-intersection due to numerical errors for recursive raytrace calls.
  //
+ //case 1: camera ray
+ //case 2: shadow ray: Os is given. obj, p, n, is not. All we want to know is if ray from Os to light intersects with any other objs
+ //case 3: object reflection ray
+ 
 
  /////////////////////////////////////////////////////////////
  // TO DO: Implement this function. See the notes for
  // reference of what to do in here
  /////////////////////////////////////////////////////////////
+  if(Os!=NULL){
+	int donothing = 0;
+  }
   double min_dist = 99999;
   double curr_len = 0;
   double lam;
+  int isShadowray = 0;
   struct point3D *tp = (struct point3D *) malloc(sizeof(struct point3D));
   struct point3D *tn = (struct point3D *) malloc(sizeof(struct point3D));
   struct object3D *curr_obj;
   curr_obj = object_list;
   *lambda = 0;	
-  	while(curr_obj != NULL){ //comment out loop, just get just plane to render
-  		 
-	    curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
-	    if(lam>0){
-	    	curr_len = lam;
-	    	if ((min_dist > curr_len) && (curr_len > 0)){
-	      	min_dist = curr_len;
-	      	*obj = curr_obj;
-	      	*lambda = lam;
-	      	memcpy(p, tp, sizeof(struct point3D));
-	      	memcpy(n, tn, sizeof(struct point3D));
-	    	}
-	 	}
-	 	curr_obj = curr_obj->next;
+
+	if(Os!=NULL && obj == NULL && p == NULL && n == NULL){
+		isShadowray = 1;
+	}  
+   if(isShadowray == 0){
+  		while(curr_obj != NULL){ //comment out loop, just get just plane to render
+  			if(Os==NULL){ 
+				curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
+				if(lam>0 && obj!=NULL){
+									//printf("normal %f %f %f\n", tn->px, tn->py, tn->pz);
+					curr_len = lam;
+					if ((min_dist > curr_len) && (curr_len > 0)){
+						min_dist = curr_len;
+						*obj = curr_obj;
+						*lambda = lam;
+						memcpy(p, tp, sizeof(struct point3D));
+						memcpy(n, tn, sizeof(struct point3D));
+						//printf("normal, %f, %f, %f\n",n->px,n->py,n->pz); 
+					}
+				}
+	 		}
+	 		curr_obj = curr_obj->next;
+		}
+	}else{ //this ray checks for shadow at p, check for intersection only
+
+		while(curr_obj != NULL){ //comment out loop, just get just plane to render
+  			if(curr_obj!=Os){ 
+				curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
+				if(lam>0){
+					*lambda = lam;
+				}
+	 		}else{
+	 			*lambda = 0;
+	 		}
+	 		curr_obj = curr_obj->next;
+		}
 	}
+	
 
 }
 
@@ -273,9 +301,10 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
  // ray originates.
  //
 
-	 double lambda;		// Lambda at intersection
+	 double lambda, shadowlam;		// Lambda at intersection
 	 double a,b;		// Texture coordinates
-	 struct object3D *obj;	// Pointer to object at intersection
+	 struct object3D *obj;
+	 struct object3D *obj2;	// Pointer to object at intersection
 	 struct point3D p, tp;	// Intersection point
 	 struct point3D n, tn;	// Normal at intersection
 	 struct colourRGB I;	// Colour returned by shading function
@@ -290,10 +319,9 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	 else
 	 {
 		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
-				
+		//=printf("normal, %f, %f, %f\n",n.px,n.py,n.pz); 
 //		if (obj != NULL){
 		if (lambda > 0){ //intersection == true, color it
-
 			struct ray3D* lightray;
 			struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
 		 	struct pointLS *curr_light = light_list;
@@ -304,29 +332,32 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				dir->pw = 0;
 				lightray = newRay(&p, dir);
 				normalize(&(lightray->d));
-				findFirstHit(lightray, &lambda, Os, &obj, &p, &n, &a, &b);
+				findFirstHit(lightray, &shadowlam, obj, NULL, NULL, NULL, &a, &b);
 				//printf("p %f %f %f \n", p.px,p.py,p.pz);
-				if(lambda <= 0){
+				if(shadowlam <=0){
 					//printf("intersected!!!");
 					rtShade(obj, &p, &n, ray, depth, a, b, &I);
-					
-					col->R += I.R;
-					col->G += I.G;
-					col->B += I.B;
-					//printf("RGB %f, %f, %f\n", col->R, col->G, col->B);
+					//printf("normal, %f, %f, %f\n",n.px,n.py,n.pz); 
+					if(n.py<0){
+						int donothing = 0; //gdb break here
+					}
+					col->R = I.R * obj->col.R;
+					col->G = I.G * obj->col.G;
+					col->B = I.B * obj->col.B;
 					
 				}else{ //don't color the shadow
 					col->R = 0;
-					col->G =0;
-					col->B =0;
+					col->G = 0;
+					col->B = 0;
+					//printf("it never gets here\n");
 				}
 				//curr_light = curr_light->next;
 			//}
 
-			/*if(depth>0){
+			//if(depth>0){
 				//create reflected ray
-				rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object3D *Os)
-			}*/
+				//rayTrace(ray, depth++, col, Os);
+			//}
 			
 		
 		}
