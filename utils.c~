@@ -245,9 +245,11 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
 	}
     else *lambda = 0;
   }
+  free(model_ray);
+  free(transformed_n);
 }
 
-void triangleIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n)
+
 
 void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)
 {
@@ -312,7 +314,8 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  		matVecMult(Tinv_trans, n); //transforming n from model to world
  	 	normalize(n);
 	}
-
+  free(model_ray);
+  free(transformed_n);
 }
 
 void loadTexture(struct object3D *o, const char *filename)
@@ -408,12 +411,29 @@ void addAreaLight(float sx, float sy, float nx, float ny, float nz,\
    casts no shadow. If you require a lightsource to shade another, you must
    make it into a proper solid box with backing and sides of non-light-emitting
    material
- */
+ */ // ra, rd, rs, rg - Albedos for the components of the Phong model
+ // r, g, b, - Colour for this plane
+ // alpha - Transparency, must be set to 1 unless you are doing refraction
+ // r_index - Refraction index if you are doing refraction.
+ // shiny - Exponent for the specular component of the Phong model
 
   /////////////////////////////////////////////////////
   // TO DO: (Assignment 4!)
   // Implement this function to enable area light sources
   /////////////////////////////////////////////////////
+ struct object3D *o;
+   o=newPlane(.05,.75,.05,.05,.55,.8,.75,1,1,2);
+ 	Scale(o,sx,sy,1);				// Do a few transforms...
+ 	RotateZ(o,-PI/1.20);
+ 	RotateX(o,-PI/2.25);
+ 	Translate(o, tx, ty, tz);
+ 	invert(&o->T[0][0],&o->Tinv[0][0]);		
+ 	insertObject(o,o_list);
+ 	int i,j;
+ 	struct point3D *p;
+ 	struct pointLS *l;
+ 	struct pointLS *curr_light = *l_list;
+
 
 }
 

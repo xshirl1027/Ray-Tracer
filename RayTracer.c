@@ -191,7 +191,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  refl_lv->py = -pl_vector->py + (2* t->py); //translate up 2t
  refl_lv->pz = -pl_vector->pz + (2* t->pz);
  refl_lv->pw = 0;
- 
+  int py = p->py;
 if(obj->intersect == planeIntersect){
 //printf("p %f %f %f\n", p->px, p->py, p->pz); 
 					p->py = 0;	
@@ -212,7 +212,11 @@ if(obj->intersect == planeIntersect){
  col->B = (amb+ dif +spc);
  
  //printf("RGB, %f, %f, %f\n",col->R,col->G,col->B); 
- 
+ p->py = py;
+ free(refl_lv);
+ free(t);
+ free(cam_dir);
+ free(pl_vector);
 }
 
 void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct object3D **obj, struct point3D *p, struct point3D *n, double *a, double *b)
@@ -283,7 +287,8 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 	 		curr_obj = curr_obj->next;
 		}
 	}
-	
+	free(tp);
+	free(tn);
 
 }
 
@@ -385,10 +390,11 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				col->G += min(1,col->G);
 				col->B += 0.4*newcol->B;
 				col->B += min(1,col->B);
+				free(newcol);
+				free(ref_ray);
 				}
 			}
-			
-		
+		free(dir);
 		}
 		else //darkness
 		{
@@ -396,7 +402,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 			col->G +=0.0;
 			col->B +=0.0;
 		}
-
+			
 
 	 }	
  ///////////////////////////////////////////////////////
@@ -599,7 +605,9 @@ int main(int argc, char *argv[])
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
 		//}
-
+			free(ray);
+			free(d);
+			free(pc);
 	  } // end for i
 	 } // end for j
 	printf("pixel %d pixel 2 %d\n",total, total2);
