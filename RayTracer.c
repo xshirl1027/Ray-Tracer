@@ -206,7 +206,12 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  col->R = (amb + dif +spc);
  col->G = (amb + dif +spc);
  col->B = (amb+ dif +spc);
- memcpy(ray,refl_lv, sizeof(ray3D*));
+ 
+ ray->p0 = p;
+ ray->d.px = refl_lv->px;
+ ray->d.py = refl_lv->py;
+ ray->d.pz = refl_lv->pz;
+ ray->d.pw = 0; 
  
  //printf("RGB, %f, %f, %f\n",col->R,col->G,col->B); 
  
@@ -341,9 +346,9 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 					if(n.py<0){
 						int donothing = 0; //gdb break here
 					}
-					col->R = I.R * obj->col.R;
-					col->G = I.G * obj->col.G;
-					col->B = I.B * obj->col.B;
+					col->R += I.R * obj->col.R;
+					col->G += I.G * obj->col.G;
+					col->B += I.B * obj->col.B;
 					
 				}else{ //don't color the shadow
 					col->R = 0;
@@ -354,10 +359,10 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				//curr_light = curr_light->next;
 			//}
 
-			//if(depth>0){
+			if(depth>0){
 				//create reflected ray
-				//rayTrace(ray, depth++, col, Os);
-			//}
+				rayTrace(ray, depth++, col, Os);
+			}
 			
 		
 		}
