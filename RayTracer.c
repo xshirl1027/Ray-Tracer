@@ -361,7 +361,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 
 			if(depth>0){
 				//create reflected ray
-				rayTrace(ray, depth++, col, Os);
+				rayTrace(ray, depth++, col, obj);
 			}
 			
 		
