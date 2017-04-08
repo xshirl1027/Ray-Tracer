@@ -341,9 +341,9 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 					if(n.py<0){
 						int donothing = 0; //gdb break here
 					}
-					col->R += I.R * obj->col.R;
-					col->G += I.G * obj->col.G;
-					col->B += I.B * obj->col.B;
+					col->R = I.R * obj->col.R;
+					col->G = I.G * obj->col.G;
+					col->B = I.B * obj->col.B;
 					
 				}else{ //don't color the shadow
 					col->R = 0;
