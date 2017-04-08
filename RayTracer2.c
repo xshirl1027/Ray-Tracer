@@ -425,6 +425,7 @@ int main(int argc, char *argv[])
 	 struct ray3D *ray;		// Structure to keep the ray from e to a pixel
 	 struct colourRGB col;		// Return colour for raytraced pixels
 	 struct colourRGB background;   // Background colour
+	 		struct colourRGB total_col;	
 	 int i,j;			// Counters for pixel coordinates
 	 unsigned char *rgbIm;
 		int total = 0, total2 = 0;
@@ -544,7 +545,6 @@ int main(int argc, char *argv[])
 	 fprintf(stderr,"World to camera conversion matrix\n");
 	 printmatrix(cam->W2C);
 	 fprintf(stderr,"\n");
-
 	 #pragma omp parallel for
 	 //fprintf(stderr,"Rendering row: ");
 	 for (j=0;j<sx;j++)		// For each of the pixels in the image
@@ -552,12 +552,16 @@ int main(int argc, char *argv[])
 	 // fprintf(stderr,"%d/%d, ",j,sx);
 	  for (i=0;i<sx;i++)
 	  {
+	  		total_col.R = 0;
+			total_col.G = 0;
+			total_col.B = 0;
 		///////////////////////////////////////////////////////////////////
 		// TO DO - complete the code that should be in this loop to do the
 		//         raytracing!
 		///////////////////////////////////////////////////////////////////
 		
 		//from 418notes =: (wl+(i+0.5)Δu,wt+(j+0.5)Δv,f)
+		
 		d = (struct point3D*)malloc(sizeof(point3D)); //dir vector
 		pc = (struct point3D*)malloc(sizeof(point3D)); //image plane
 		struct point3D *origin = newPoint(0,0,0); //camera origin
@@ -565,39 +569,62 @@ int main(int argc, char *argv[])
 		int sample_d = 4; //divide pixel into 4x4 grid
 		double sample_du = du/sample_d;
 		double sample_dv = dv/sample_d;
-		struct colourRGB total_col;	
-		int r = (double)rand() / (double)RAND_MAX ; //generate random double (0-1)
-		r = r/32; //random double (0-1/16)
+
+		
 		matVecMult(cam->C2W, origin);
+		
 		//do antialiasing work here------------------------------------------
 		//we want to super-sample by spliting each pixel into 16 subpixels
 		//shoot a ray through each of them and average the color received from
 		//raytracer
-		pc->px = cam->wl+ (i+0.5)*du;
-		pc->py = cam->wt + (j+0.5)*dv;
-		pc->pz = -1;
-		pc->pw = 1;
-		//bring image plane and origin to world
-		matVecMult(cam->C2W, pc);
-
-		//create ray in world space
-		
-		memcpy(d, pc, sizeof(struct point3D));
-		subVectors(origin, d);
-		d->pw = 0;
-		normalize(d);
-		ray = newRay(origin, d);
-		
-		rayTrace(ray, 1, &col, NULL);
+		//problem, seems to segfault at size 1000
+		//problem, seems to segfault at size 1000
+		double startx = (i+0.5)*du;
+		double starty = (j+0.5)*dv;
+		int x,y;
+		for(x=0; x<sample_d; x++){
+			for(y=0; y<sample_d; y++){
+				double r = (double)rand() / (double)RAND_MAX ; //generate random double (0-1)
+				r = r/sample_d; //random double (0-1/16)
+				pc->px = cam->wl+ (startx+x*sample_du+r);
+				pc->py = cam->wt + (starty+y*sample_dv+r);
+				pc->pz = -1;
+				pc->pw = 1;
+				//printf("r %f",r);
+			//printf("subpixel %f %f %f\n", pc->px, pc->py, pc->pz);
+			//printf("origin: %f %f %f\n", origin->px, origin->py, origin->pz);			
+			//bring image plane and origin to world
+				matVecMult(cam->C2W, pc);
+				memcpy(d, pc, sizeof(struct point3D));
+				subVectors(origin, d);
+				normalize(d);
+				//printf("subpixel d %f %f %f\n", d->px, d->py, d->pz);
+				d->pw = 0;
+				//ray = newRay(origin, d);	
+				ray->p0 = *origin;
+				ray->d = *d;
+				rayTrace(ray, 1, &col, NULL);
+			//if(col.R!=0)
+				//printf("col %f %f %f\n", col.R, col.G, col.B);
+				total_col.R += col.R;
+				total_col.G += col.G;
+				total_col.B += col.B;
+				//free(ray);
+			
+			}
+		}
+		total_col.R = total_col.R/n_samples;
+		total_col.G = total_col.G/n_samples;
+		total_col.B = total_col.B/n_samples;
 		
 		//--------------------------------------------------------------------
 		
 		
 		//coloring the pixel with u and v values as per davids suggestion for debugging
 		//if(col.R!=0 && col.G!=0 && col.B!=0){
-			((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
-			((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
-			((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(total_col.R*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(total_col.G*255, 255);
+			((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(total_col.B*255, 255);
 		//}
 
 	  } // end for i

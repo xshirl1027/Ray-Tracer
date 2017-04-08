@@ -227,7 +227,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
     //model_ray->rayPos(model_ray, *lambda, p); 
     	p->px = model_ray->p0.px + (*lambda) * (model_ray->d.px);
     	p->py = model_ray->p0.py + (*lambda) * (model_ray->d.py);
-		p->pz = 0;
+		p->pz = model_ray->p0.pz + (*lambda) * (model_ray->d.pz);
  		p->pw = 1;
     //checking if point within bound & transforming from model space to world space
     if (-1 <=p->px && p->px<= 1 && -1 <=p->py && p->py <=1) 
@@ -239,10 +239,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   		n->pw = 0;
       //transforming normal using inverse tr7anspose of model to world matix
       normalTransform(n, transformed_n, plane); 
-      transformed_n->px = 0;
-      transformed_n->py = 1;
-      transformed_n->pz = 0;
-      transformed_n->pw = 0;
+      normalize(transformed_n);
       memcpy(n, transformed_n, sizeof(point3D));
       normalize(n);
 	}
@@ -251,106 +248,6 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
 }
 
 void triangleIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n)
-{
- // Computes and returns the value of 'lambda' at the intersection
- // between the specified ray and the specified canonical plane.
-	//1. transform ray using inverse transform
-	//2. find intersection with model object
-	//3. transform model and intersection point to world
- /////////////////////////////////
- // TO DO: Complete this function.
- /////////////////////////////////
-
-  //transformation of ray and normal holder variables
-  struct ray3D * model_ray =(struct ray3D *)malloc(sizeof(struct ray3D));
-  struct point3D * transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
-  struct point3D *p1 = newPoint(-1, 0, 1); 
-  struct point3D *p2 = newPoint(1, 0, 1); 
-  struct point3D *p3 = newPoint(1, 0, -1);
-  struct point3D *p4 = newPoint(-1, 0, -1);
-  struct point3D *n1;
-  struct point3D *P;
-  struct point3D *Q;
-  struct point3D *T;
-  struct point3D *e1 = newPoint(-1, 0, 1); //p1
-  struct point3D *e2 = newPoint(-1, 0, 1); //p1
-  float det, inv_det, u, v, t;
-
-  subVectors(p2, e1); //created triangle edges
-  subVectors(p3, e2);
-  
-  //Nx = UyVz - UzVy
-  //Ny = UzVx - UxVz
-  //Nz = UxVy - UyVx 
-  //create normal by taking cross product of two edges
-	e1->pw = 0;
-	e2->pw = 0;
-	n1 = cross(e1,e2);
-	n1->pw = 0;
-	//calculate P:normal of e2 and d
-	//Px = dye2z - dzey
-   //Py = dzex - dxez
-   //Pz = dxey - dyex
-   memcpy(model_ray, ray, sizeof(struct ray3D));
-	P = cross(e2, &(model_ray->d));
-	//if determinant is near zero, ray lies in plane of triangle or ray is parallel to plane of triangle
-   det = dot(e1, P);
-   if (det==0){
-    *lambda = 0;
-   }else{
-   	inv_det = 1.f / det;
-		//calculate distance from V1 to ray origin
-		memcpy(T, p1, sizeof(struct point3D));
-  		subVectors(&(model_ray->p0), T);
-  		u = dot(T,P);
-		Q = cross(T, e1);
-		Q->pw=0;
-		T->pw=0;
-  		v = dot(&(model_ray->d), Q) * inv_det;
-  		t = dot(e2, Q) * inv_det;
-  		if((u < 0.f || u > 1.f) || (v < 0.f || u + v  > 1.f) || t <=0){
-			*lambda = 0;
-  		}else{
-  			*lambda = t;
-  		}
-  	}   
- //transforming ray origin and direction vector from world to model view, using T_inv
-  matVecMult(plane->Tinv, &(model_ray->p0));
-  matVecMult(plane->Tinv, &(model_ray->d));
-  model_ray->d.pw = 0;
-  normalize(&(model_ray->d));
-  model_ray->d.pw = 0;
-  
-  //calculating lambda
-	*lambda = -(model_ray->p0.py)/model_ray->d.py;
-  //checking lambda and making sure ray is not parallel to plane
-  if(*lambda <=0)
-  {
-    *lambda = 0;
-  }
-  else
-  { 
-    //finding point of intersection
-    //model_ray->rayPos(model_ray, *lambda, p); 
-    p->px = model_ray->p0.px + *lambda*model_ray->d.px;
-    p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
-    p->py = 0;
- 	 p->pw = 1;
-    //checking if point within bound & transforming from model space to world space
-    if (-1 <=p->px && p->px<= 1 && -1 <=p->pz && p->pz <=1) 
-    { 
-      matVecMult(plane->T, p); //converting p from model to world
-  		n->px = 0;
-  		n->py = 0;
-  		n->pz = -1;
-  		n->pw = 0;
-      //transforming normal using inverse transpose of model to world matix
-      normalTransform(n, transformed_n, plane); 
-      memcpy(n, transformed_n, sizeof(point3D)); 
-	}
-    else *lambda = 0;
-  }
-}
 
 void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b)
 {
@@ -413,9 +310,6 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  	 	matVecMult(sphere->T, p);
  	 	transpose(sphere->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
  		matVecMult(Tinv_trans, n); //transforming n from model to world
-
- 	 	//normalTransform(n, transformed_n, sphere);
- 	 	//memcpy(n, transformed_n, sizeof(point3D)); 
  	 	normalize(n);
 	}
 

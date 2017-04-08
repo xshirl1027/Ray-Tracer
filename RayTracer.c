@@ -192,21 +192,24 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  refl_lv->pz = -pl_vector->pz + (2* t->pz);
  refl_lv->pw = 0;
  
+if(obj->intersect == planeIntersect){
+//printf("p %f %f %f\n", p->px, p->py, p->pz); 
+					p->py = 0;	
+}
  //normalize(refl_lv);
  //normalize(n);
  
- amb  =  (obj->alb.rg)*(obj->alb.ra); //remove +0.2 later, just want to see ambient 
+ amb = (obj->alb.ra); //remove +0.2 later, just want to see ambient 
  rdmax = max(0,dot(pl_vector, n));
-  dif = (obj->alb.rd)*rdmax;
-  	spc_max = pow(max(0, dot(cam_dir,refl_lv)), obj->shinyness);
+ dif = (obj->alb.rd)*rdmax;
+ spc_max = pow(max(0, dot(cam_dir,refl_lv)), obj->shinyness);
   
  
  spc = (obj->alb.rs)*spc_max;
- // Be sure to update 'col' with the final colour computed here!
+ // Be sure to update 'col' with the fi
  col->R = (amb + dif +spc);
  col->G = (amb + dif +spc);
  col->B = (amb+ dif +spc);
- memcpy(ray,refl_lv, sizeof(ray3D*));
  
  //printf("RGB, %f, %f, %f\n",col->R,col->G,col->B); 
  
@@ -251,10 +254,9 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 	}  
    if(isShadowray == 0){
   		while(curr_obj != NULL){ //comment out loop, just get just plane to render
-  			if(Os==NULL){ 
 				curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
 				if(lam>0 && obj!=NULL){
-									//printf("normal %f %f %f\n", tn->px, tn->py, tn->pz);
+					//printf("normal %f %f %f\n", tn->px, tn->py, tn->pz);
 					curr_len = lam;
 					if ((min_dist > curr_len) && (curr_len > 0)){
 						min_dist = curr_len;
@@ -265,7 +267,6 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 						//printf("normal, %f, %f, %f\n",n->px,n->py,n->pz); 
 					}
 				}
-	 		}
 	 		curr_obj = curr_obj->next;
 		}
 	}else{ //this ray checks for shadow at p, check for intersection only
@@ -311,14 +312,17 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	
 	 if (depth>MAX_DEPTH)	// Max recursion depth reached. Return invalid colour.
 	 {
-	  col->R=-1;
-	  col->G=-1;
-	  col->B=-1;
+	  col->R=0;
+	  col->G=0;
+	  col->B=0;
 	  return;
 	 } 
 	 else
 	 {
-		findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
+	  col->R=0;
+	  col->G=0;
+	  col->B=0;
+	  findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
 		//=printf("normal, %f, %f, %f\n",n.px,n.py,n.pz); 
 //		if (obj != NULL){
 		if (lambda > 0){ //intersection == true, color it
@@ -336,6 +340,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				//printf("p %f %f %f \n", p.px,p.py,p.pz);
 				if(shadowlam <=0){
 					//printf("intersected!!!");
+
 					rtShade(obj, &p, &n, ray, depth, a, b, &I);
 					//printf("normal, %f, %f, %f\n",n.px,n.py,n.pz); 
 					if(n.py<0){
@@ -346,26 +351,50 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 					col->B = I.B * obj->col.B;
 					
 				}else{ //don't color the shadow
-					col->R = 0;
-					col->G = 0;
-					col->B = 0;
+					col->R += 0;
+					col->G += 0;
+					col->B += 0;
 					//printf("it never gets here\n");
 				}
-				//curr_light = curr_light->next;
+				//curr_light = curr_light->next; depth++
 			//}
 
-			//if(depth>0){
-				//create reflected ray
-				//rayTrace(ray, depth++, col, Os);
-			//}
+			if(depth>0){
+				//create reflected ray along the normal. Follow the formula on slides.
+				if(obj->intersect != planeIntersect){
+				struct ray3D *ref_ray=(struct ray3D *) malloc(sizeof(struct ray3D));
+				double dot_prod = dot(&(ray->d), &n);
+				struct point3D np;	// Intersection point
+	 			struct point3D nn;	// Normal at intersection
+				ref_ray->p0 = p;
+				ref_ray->d.px = ray->d.px - 2*dot_prod*n.px;
+				ref_ray->d.py = ray->d.py - 2*dot_prod*n.py;
+				ref_ray->d.pz = ray->d.pz - 2*dot_prod*n.pz;
+				ref_ray->d.pw = 0;
+				ref_ray->rayPos = rayPosition;
+				normalize(&(ref_ray->d)); 
+				//r= d - 2(d*n)n
+				double tlam;
+				struct object3D *tobj;
+				struct colourRGB *newcol = (struct colourRGB *) malloc(sizeof(struct colourRGB));
+				depth++;
+				rayTrace(ref_ray, depth, newcol, obj);
+				col->R += 0.4*newcol->R;
+				col->R += min(1,col->R);
+				col->G += 0.4*newcol->G;
+				col->G += min(1,col->G);
+				col->B += 0.4*newcol->B;
+				col->B += min(1,col->B);
+				}
+			}
 			
 		
 		}
 		else //darkness
 		{
-			col->R =0.0;
-			col->G =0.0;
-			col->B =0.0;
+			col->R +=0.0;
+			col->G +=0.0;
+			col->B +=0.0;
 		}
 
 
@@ -515,6 +544,7 @@ int main(int argc, char *argv[])
 	 fprintf(stderr,"World to camera conversion matrix\n");
 	 printmatrix(cam->W2C);
 	 fprintf(stderr,"\n");
+
 	 #pragma omp parallel for
 	 //fprintf(stderr,"Rendering row: ");
 	 for (j=0;j<sx;j++)		// For each of the pixels in the image
@@ -531,26 +561,38 @@ int main(int argc, char *argv[])
 		d = (struct point3D*)malloc(sizeof(point3D)); //dir vector
 		pc = (struct point3D*)malloc(sizeof(point3D)); //image plane
 		struct point3D *origin = newPoint(0,0,0); //camera origin
-		//image plane
+		int n_samples = 16; //number of subpixels to be divided
+		int sample_d = 4; //divide pixel into 4x4 grid
+		double sample_du = du/sample_d;
+		double sample_dv = dv/sample_d;
+		struct colourRGB total_col;	
+		int r = (double)rand() / (double)RAND_MAX ; //generate random double (0-1)
+		r = r/16; //random double (0-1/16)
+		matVecMult(cam->C2W, origin);
+		//do antialiasing work here------------------------------------------
+		//we want to super-sample by spliting each pixel into 16 subpixels
+		//shoot a ray through each of them and average the color received from
+		//raytracer
 		pc->px = cam->wl+ (i+0.5)*du;
 		pc->py = cam->wt + (j+0.5)*dv;
 		pc->pz = -1;
 		pc->pw = 1;
-
 		//bring image plane and origin to world
 		matVecMult(cam->C2W, pc);
-		matVecMult(cam->C2W, origin);
+
 		//create ray in world space
+		
 		memcpy(d, pc, sizeof(struct point3D));
 		subVectors(origin, d);
 		d->pw = 0;
+		normalize(d);
 		ray = newRay(origin, d);
-				
-		if(length(&(ray->d))<0) //not supposed to happen
-			printf("%f,%f, %f\n", ray->d.px,ray->d.py, ray->d.pz);
 		
-		rayTrace(ray, MAX_DEPTH, &col, NULL);
-
+		rayTrace(ray, 1, &col, NULL);
+		
+		//--------------------------------------------------------------------
+		
+		
 		//coloring the pixel with u and v values as per davids suggestion for debugging
 		//if(col.R!=0 && col.G!=0 && col.B!=0){
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
