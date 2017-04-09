@@ -389,6 +389,7 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  up = x*a - (double)u;
  vp = y*b - (double)v;
 
+ //Bi-linear interpolation
  *(R)= (1-up)*(1-vp)*Ruv + up*(1-vp)*Rup + (1-up)*vp*Rrt + up*vp*Racr;
  *(G)= (1-up)*(1-vp)*Guv + up*(1-vp)*Gup + (1-up)*vp*Grt + up*vp*Gacr;
  *(B)= (1-up)*(1-vp)*Buv + up*(1-vp)*Bup + (1-up)*vp*Brt + up*vp*Bacr;

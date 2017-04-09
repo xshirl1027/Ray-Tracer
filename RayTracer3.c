@@ -201,7 +201,7 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
   // Get object colour from the texture given the texture coordinates (a,b), and the texturing function
   // for the object. Note that we will use textures also for Photon Mapping.
   obj->textureMap(obj->texImg,a,b,&R,&G,&B);
-  // printf("R: %f G: %f B: %f \n",R, G, B);
+  
   obj->col.R = R;
   obj->col.G = G;
   obj->col.B = B;
@@ -454,11 +454,10 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 			col->R = 0;
 			col->G = 0;
 			col->B = 0;
-			// printf("x: %f y: %f z: %f\n", ray->d.px, ray->d.py, ray->d.pz);
+			//getting uv coordinates from intersection for texture mapping
 			convert_xyz_to_cube_uv(ray->d.px, ray->d.py, ray->d.pz, &index, &a, &b);
-
+			//texture mapping into black space
 			texMap(environment_map[index], a, b, &col->R, &col->G, &col->B);
-			
 		}
 
 
