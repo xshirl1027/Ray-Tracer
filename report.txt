@@ -1,0 +1,64 @@
+REPORT -- Assignment 3 & 4
+---------------------------
+
+Group members: Shirley (Zhaorong) Xia & Vrishti Dutta
+_______________________________________________________________________________
+Process you used to complete the assignment (including organization,
+understanding the starter code, and building a solution):
+
+In order to complete this assignment, we studied the lecture slides, tutorial
+slides and/or researched online materials.
+
+Our first task of rendering a generic image led us learn about geometric 
+intersections, which included understanding the ray trace algorithm, which we
+implemented after that.
+
+We had to draw multiple diagrams to properly understand projections and 
+coordinate frames in order to correct our rendering.
+
+Lastly, we did all of these simultaneously with implementing the functions.
+
+_______________________________________________________________________________
+Brief description code implemented (including "cruncy" part of the code):
+
+We implemented this assignment in increments. 
+First, we tackled the rendering of a general plane object only, whereby 
+we ensured we understood all the functions we were required to write 
+and ensuring we understand all the transformations to render an object.
+Second, once we hand the plane rendering, we worked on rendering the spheres,
+
+Our next step was to render the shadowing, as per the pseudocode, followed by
+the recursing in rayTrace function to allow reflections, with the use of 
+phong illuminations. This culminated our basic rendering of an image.
+
+Later, we developed our image further by adding anti-aliasing, area lights, 
+cylinderical object(s), texture mapping, multithreading, and environment map,
+leading to a "neat" scene.
+
+_______________________________________________________________________________
+Easy and hard parts of the assigment:
+
+We found this assignment generally very challenging as it had to be 
+implemented in c, which requires direct memory management and resolving many
+segmentation faults. Nevertheless, theory-wise, we had trouble understanding
+which parts of the code we were to fill up and the coordinate system required
+for rendering. Moreover, implementing the ray trace recursion was also 
+challenging, however, the difficulty was alleviated by the tutorial slides.
+For the more advanced ray tracing, we found area lights and environment mapping
+harder to implement.
+
+_______________________________________________________________________________
+Our understanding of concepts:
+	- Geometry (points, vectors, planes, spheres, intersections, normals, etc.):
+
+	- Object transformations:
+
+	- Projection and coordinate frames:
+
+	- Illumination (the Phong model, basically):
+
+_______________________________________________________________________________
+The role of each member on the project:
+
+
+

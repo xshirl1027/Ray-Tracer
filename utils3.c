@@ -7,7 +7,7 @@
    understand how the entire code works.
 */
 
-#include "utils.h"
+#include "utils3.h"
 
 // A useful 4x4 identity matrix which can be used at any point to
 // initialize or reset object transformations
@@ -225,10 +225,11 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   { 
     //finding point of intersection
     //model_ray->rayPos(model_ray, *lambda, p); 
-    	p->px = model_ray->p0.px + (*lambda) * (model_ray->d.px);
-    	p->py = model_ray->p0.py + (*lambda) * (model_ray->d.py);
+    p->px = model_ray->p0.px + (*lambda) * (model_ray->d.px);
+    p->py = model_ray->p0.py + (*lambda) * (model_ray->d.py);
 		p->pz = model_ray->p0.pz + (*lambda) * (model_ray->d.pz);
  		p->pw = 1;
+    
     // if (p->py > -1.4) printf("x: %f y: %f z: %f\n", p->px, p->py, p->pz);
     //checking if point within bound & transforming from model space to world space
     if (-1 <=p->px && p->px<= 1 && -1 <=p->py && p->py <=1) 
@@ -249,8 +250,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
       normalize(transformed_n);
       memcpy(n, transformed_n, sizeof(point3D));
       normalize(n);
-	}
-    else *lambda = 0;
+	  } else *lambda = 0;
   }
 }
 
@@ -394,7 +394,77 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  *(B)= (1-up)*(1-vp)*Buv + up*(1-vp)*Bup + (1-up)*vp*Brt + up*vp*Bacr;
 
 }
+void convert_xyz_to_cube_uv(double x,double y,double z, int *index, double *u, double *v)
+{ 
+  double absX = fabs(x);
+  double absY = fabs(y);
+  double absZ = fabs(z);
+  
+  int isXPositive = x > 0 ? 1 : 0;
+  int isYPositive = y > 0 ? 1 : 0;
+  int isZPositive = z > 0 ? 1 : 0;
+  
+  double maxAxis, uc, vc;
+  
+  // POSITIVE X
+  if (isXPositive && absX >= absY && absX >= absZ) {
+    // u (0 to 1) goes from +z to -z
+    // v (0 to 1) goes from -y to +y
+    maxAxis = absX;
+    uc = -z;
+    vc = y;
+    *index = 0;
+  }
+  // NEGATIVE X
+  if (!isXPositive && absX >= absY && absX >= absZ) {
+    // u (0 to 1) goes from -z to +z
+    // v (0 to 1) goes from -y to +y
+    maxAxis = absX;
+    uc = z;
+    vc = y;
+    *index = 1;
+  }
+  // POSITIVE Y
+  if (isYPositive && absY >= absX && absY >= absZ) {
+    // u (0 to 1) goes from -x to +x
+    // v (0 to 1) goes from +z to -z
+    maxAxis = absY;
+    uc = x;
+    vc = -z;
+    *index = 2;
+  }
+  // NEGATIVE Y
+  if (!isYPositive && absY >= absX && absY >= absZ) {
+    // u (0 to 1) goes from -x to +x
+    // v (0 to 1) goes from -z to +z
+    maxAxis = absY;
+    uc = x;
+    vc = z;
+    *index = 3;
+  }
+  // POSITIVE Z
+  if (isZPositive && absZ >= absX && absZ >= absY) {
+    // u (0 to 1) goes from -x to +x
+    // v (0 to 1) goes from -y to +y
+    maxAxis = absZ;
+    uc = x;
+    vc = y;
+    *index = 4;
+  }
+  // NEGATIVE Z
+  if (!isZPositive && absZ >= absX && absZ >= absY) {
+    // u (0 to 1) goes from +x to -x
+    // v (0 to 1) goes from -y to +y
+    maxAxis = absZ;
+    uc = -x;
+    vc = y;
+    *index = 5;
+  }
 
+  // Convert range from -1 to 1 to 0 to 1
+  *u = 0.5f * (uc / maxAxis + 1.0f);
+  *v = 0.5f * (vc / maxAxis + 1.0f);
+}
 void insertObject(struct object3D *o, struct object3D **list)
 {
  if (o==NULL) return;

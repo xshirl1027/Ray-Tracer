@@ -18,7 +18,7 @@
   clearly marked "TO DO"
 */
 
-#include "utils.h"
+#include "utils3.h"
 #define HEIGHT 1000
 #define WIDTH 1000
 #define max(A,B) ((A)<(B)?(B):(A))
@@ -29,6 +29,7 @@ struct pointLS *light_list;
 int MAX_DEPTH;
 int object_list_size = 0;
 const char *plane_texture = "grid.ppm";
+const char *sky_environment = "sky.ppm";
 
 
 void buildScene(void)
@@ -70,30 +71,23 @@ void buildScene(void)
 
  // Let's add a plane
  // Note the parameters: ra, rd, rs, rg, R, G, B, alpha, r_index, and shinyness)
- o=newPlane(.05,.75,.05,.05,.55,.8,.75,1,1,2);	// Note the plane is highly-reflective (rs=rg=.75) so we
-						// should see some reflections if all is done properly.
-						// Colour is close to cyan, and currently the plane is
-						// completely opaque (alpha=1). The refraction index is
-						// meaningless since alpha=1
+ // o=newPlane(.05,.75,.05,.05,.55,.8,.75,1,1,2);	// Note the plane is highly-reflective (rs=rg=.75) so we
+	// 					// should see some reflections if all is done properly.
+	// 					// Colour is close to cyan, and currently the plane is
+	// 					// completely opaque (alpha=1). The refraction index is
+	// 					// meaningless since alpha=1
 
- o->texImg = readPPMimage(plane_texture);
- Scale(o,6,6,1);				// Do a few transforms...
- RotateX(o,PI/2.25);
- Translate(o,0,-3,10);
- invert(&o->T[0][0],&o->Tinv[0][0]);		// Very important! compute
+ // o->texImg = readPPMimage(plane_texture);
+ // Scale(o,6,6,1);				// Do a few transforms...
+ // // RotateZ(o,PI/1.20);
+ // RotateX(o,PI/2.25);
+ // Translate(o,0,-3,10);
+ // invert(&o->T[0][0],&o->Tinv[0][0]);		// Very important! compute
 						// and store the inverse
 						// transform for this object!
 
- insertObject (o,&object_list);			// Insert into object list
- object_list_size += 1;
-
- o=newPlane(.05,.75,.05,.05,NULL,NULL,NULL,NULL,NULL,NULL);
- o->texImg = readPPMimage(plane_texture);
- Scale(o,10,10,1);
- Translate(o,-10.5,0,0);
- invert(&o->T[0][0],&o->Tinv[0][0]);
- insertObject (o,&object_list);
- object_list_size += 1;
+ // insertObject (o,&object_list);			// Insert into object list
+ // object_list_size += 1;
 
  // Let's add a couple spheres
  o=newSphere(.05,.95,.35,.35,1,.25,.25,1,1,35);
@@ -114,7 +108,7 @@ void buildScene(void)
 
  // Insert a single point light source.
  p.px=0;
- p.py=10;
+ p.py=15.5;
  p.pz=-5.5;
  p.pw=1;
  l=newPLS(&p,.95,.95,.95);
@@ -272,23 +266,21 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 	}  
    if(isShadowray == 0){
   		while(curr_obj != NULL){ //comment out loop, just get just plane to render
-			
-			curr_obj->intersect(curr_obj, ray, &lam, tp, tn, &ta, &tb);
-			if(lam>0 && obj!=NULL){
-				//printf("normal %f %f %f\n", tn->px, tn->py, tn->pz);
-				curr_len = lam;
-				if ((min_dist > curr_len) && (curr_len > 0)){
-					min_dist = curr_len;
-					*obj = curr_obj;
-					*lambda = lam;
-					*a = ta;
-					*b = tb;
-					memcpy(p, tp, sizeof(struct point3D));
-					memcpy(n, tn, sizeof(struct point3D));
-					//printf("normal, %f, %f, %f\n",n->px,n->py,n->pz); 
+				curr_obj->intersect(curr_obj, ray, &lam, tp, tn, &ta, &tb);
+				if(lam>0 && obj!=NULL){
+					//printf("normal %f %f %f\n", tn->px, tn->py, tn->pz);
+					curr_len = lam;
+					if ((min_dist > curr_len) && (curr_len > 0)){
+						min_dist = curr_len;
+						*obj = curr_obj;
+						*lambda = lam;
+						*a = ta;
+						*b = tb;
+						memcpy(p, tp, sizeof(struct point3D));
+						memcpy(n, tn, sizeof(struct point3D));
+						//printf("normal, %f, %f, %f\n",n->px,n->py,n->pz); 
+					}
 				}
-			}
-
 	 		curr_obj = curr_obj->next;
 		}
 	}else{ //this ray checks for shadow at p, check for intersection only
@@ -333,58 +325,57 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	 struct point3D p, tp;	// Intersection point
 	 struct point3D n, tn;	// Normal at intersection
 	 struct colourRGB I;	// Colour returned by shading function
-	
+	 struct image *img = readPPMimage(sky_environment);
+ 	 int index;
+
+
 	 if (depth>MAX_DEPTH)	// Max recursion depth reached. Return invalid colour.
 	 {
-	  col->R=0;
-	  col->G=0;
-	  col->B=0;
+	  	col->R=0;
+	 	col->G=0;
+	  	col->B=0;
 	  return;
-	 } 
-	 else
-	 {
-	  col->R=0;
-	  col->G=0;
-	  col->B=0;
-	  findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
+	 } else {
+	    col->R=0;
+	    col->G=0;
+	    col->B=0;
+	    findFirstHit(ray, &lambda, Os, &obj, &p, &n, &a, &b);
 		//=printf("normal, %f, %f, %f\n",n.px,n.py,n.pz); 
 //		if (obj != NULL){
 		if (lambda > 0){ //intersection == true, color it
-			
 			struct ray3D* lightray;
 			struct point3D *dir = (struct point3D*)malloc(sizeof(struct point3D));
 		 	struct pointLS *curr_light = light_list;
-		 	if (obj->col.R != NULL && obj->col.G != NULL && obj->col.B != NULL){
-			 	//while (curr_light!=NULL)
-			 	//{
-					memcpy(dir, &(curr_light->p0), sizeof(struct point3D));
-					subVectors(&p, dir);
-					dir->pw = 0;
-					lightray = newRay(&p, dir);
-					normalize(&(lightray->d));
-					findFirstHit(lightray, &shadowlam, obj, NULL, NULL, NULL, &a, &b);
-					//printf("p %f %f %f \n", p.px,p.py,p.pz);
-					if(shadowlam <=0){
-						//printf("intersected!!!");
+		 	//while (curr_light!=NULL)
+		 	//{
+				memcpy(dir, &(curr_light->p0), sizeof(struct point3D));
+				subVectors(&p, dir);
+				dir->pw = 0;
+				lightray = newRay(&p, dir);
+				normalize(&(lightray->d));
+				findFirstHit(lightray, &shadowlam, obj, NULL, NULL, NULL, &a, &b);
+				//printf("p %f %f %f \n", p.px,p.py,p.pz);
+				if(shadowlam <=0){
+					//printf("intersected!!!");
 
-						rtShade(obj, &p, &n, ray, depth, a, b, &I);
-						//printf("normal, %f, %f, %f\n",n.px,n.py,n.pz); 
-						if(n.py<0){
-							int donothing = 0; //gdb break here
-						}
-						col->R = I.R * obj->col.R;
-						col->G = I.G * obj->col.G;
-						col->B = I.B * obj->col.B;
-						
-					}else{ //don't color the shadow
-						col->R += 0;
-						col->G += 0;
-						col->B += 0;
-						//printf("it never gets here\n");
+					rtShade(obj, &p, &n, ray, depth, a, b, &I);
+					//printf("normal, %f, %f, %f\n",n.px,n.py,n.pz); 
+					if(n.py<0){
+						int donothing = 0; //gdb break here
 					}
-					//curr_light = curr_light->next; depth++
-				//}
-			}
+					col->R = I.R * obj->col.R;
+					col->G = I.G * obj->col.G;
+					col->B = I.B * obj->col.B;
+					
+				}else{ //don't color the shadow
+					col->R += 0;
+					col->G += 0;
+					col->B += 0;
+					//printf("it never gets here\n");
+				}
+				//curr_light = curr_light->next; depth++
+			//}
+
 			if(depth>0){
 				//create reflected ray along the normal. Follow the formula on slides.
 				if(obj->intersect != planeIntersect){
@@ -417,16 +408,23 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 			}
 			free(dir);
 		
-		}
-		else //darkness
-		{
-			col->R +=0.0;
-			col->G +=0.0;
-			col->B +=0.0;
+		} else { //environment mapping
+			col->R = 0;
+			col->G = 0;
+			col->B = 0;
+			// printf("x: %f y: %f z: %f\n", ray->d.px, ray->d.py, ray->d.pz);
+			convert_xyz_to_cube_uv(ray->d.px, ray->d.py, ray->d.pz, &index, &a, &b);
+			// printf("a: %f b: %f\n", a, b);
+						
+			texMap(img, a, b, &col->R, &col->G, &col->B);
+			printf("R: %f G: %f B: %f\n",  col->R, col->G, col->B);
+			
 		}
 
 
 	 }	
+	free(img->rgbdata);
+	free(img);
  ///////////////////////////////////////////////////////
  // TO DO: Complete this function. Refer to the notes
  // if you are unsure what to do here.
@@ -515,7 +513,7 @@ int main(int argc, char *argv[])
 	 // Camera center is at (0,0,-1)
 	 e.px=0;
 	 e.py=0;
-	 e.pz=0;
+	 e.pz=-3;
 	 e.pw=1;
 
 	 // To define the gaze vector, we choose a point 'pc' in the scene that

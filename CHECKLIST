@@ -2,9 +2,9 @@ CSC418/2504 - Winter 2017
 Checklist for Assignment 3
 ----------------------------------------------------------------------------------
 
-Name: 
+Name: Shirley (Zhaorong) Xia & Vrishti Dutta
 
-Student ID:
+Student ID: __________ & 999864099
 
 -----------------------------------------------------------------------------------------
 
@@ -15,14 +15,14 @@ A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be graded oth
 
    http://www.cs.brown.edu/~ls/teaching08.html
 
-   ___Yes   ___No
+   _x_Yes   ___No
 
 2. I understand that it is not okay to use code found online and represent it as my own work.
    Further, I understand that if caught with similarity software, I can be reprimanded by the
    department and will have to deal with the consequences of this.
 	
 
-   ___Yes   ___No
+   _x_Yes   ___No
 
    If you have used an external source, see 3 and report it there.
 
@@ -30,14 +30,16 @@ A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be graded oth
    source (the penalties/grades will be assessed according to the policy stated in 
    http://www.cs.brown.edu/~ls/teaching08.html)
 
-   ___Yes   ___No
+   _x_Yes   ___No
 
 
    If you checked yes, please supply the following
 
-       Student name/Source: 
+       Student name/Source: https://en.wikipedia.org/wiki/Cube_mapping
 
        Portion(s) of assignment completed by that student (see checklist below)
+       Function convert_xyz_to_cube_uv in utils.c
+
 
 -----------------------------------------------------------------------------------------
 
@@ -51,26 +53,39 @@ B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FUL
    WE WILL BE ABLE TO MAKE AN ACCURATE ASSESSMENT
 
 				Completed   Partial   Not done   Mark
-[10 marks]  Ray Casting
+_x_ [10 marks]  Ray Casting
 
-[15 marks]  Intersection	
+_x_ [15 marks]  Intersection	
             for spheres
 
-[15 marks]  Intersection
+_x_ [15 marks]  Intersection
 	    for square
 
-[15 marks]  Normal transforms
+_x_ [15 marks]  Normal transforms
 
-[15 marks]  Local Phong
+_x_ [15 marks]  Local Phong
 
-[10 marks]  Shadows
+_x_ [10 marks]  Shadows
 
-[15 marks]  Global reflection
+_x_ [15 marks]  Global reflection
 
-[5 marks]   Report
+_x_ [5 marks]   Report
 
-[TA assigned]  Penalty marks
+_x_ []		Anti-aliasing
 
+_x_ []		Area light sources
 
-Total for A3:							/100
+_x_ []		Neat scene
+
+Advanced techniques
+
+_x_   		Handling non-trivial compound objects
+
+_x_   		Texture mapping
+
+_x_   		Environment mapping
+
+_x_   		Multi-threading
+
+Total for A3/4:							
 
