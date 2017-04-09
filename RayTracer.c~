@@ -219,6 +219,39 @@ if(obj->intersect == planeIntersect){
  free(pl_vector);
 }
 
+void refract(point3D *d,point3D *dr, point3D *n, float ref)
+{
+	float cosi = max(min(1, dotProduct(I, N),-1);
+	float etai = 1, etat = ior;
+	point3D *tn = (point3D *)malloc(sizeof(point3D));
+	if (cosi < 0) 
+	{ 
+	cosi = -cosi; 
+	}else
+	{//swap etai and etat
+		 etai = etai+etat;
+		 etat = etai-etat; 
+		 etai = etai-etat;
+		 tn->px = -n->px;
+		 tn->py = -n->py;
+		 tn->pz = -n->pz;
+		 tn->pw = 0; 
+	}
+	float eta = etai / etat;
+	float k = 1 - eta * eta * (1 - cosi * cosi);
+	if(k<0){
+		dr->px =0;
+		dr->py =0;
+		dr->pz =0;
+		dr->pw =0;
+	}else{
+		dr->px = eta * d->px + (eta * cosi - sqrt(k)) * n->px;
+		dr->pw = eta * d->pw + (eta * cosi - sqrt(k)) * n->pw;
+		dr->pz = eta * d->pz + (eta * cosi - sqrt(k)) * n->pz;
+		dr->pw =0;
+	}
+} 
+
 void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct object3D **obj, struct point3D *p, struct point3D *n, double *a, double *b)
 {
  // Find the closest intersection between the ray and any objects in the scene.
@@ -604,7 +637,8 @@ int main(int argc, char *argv[])
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3]   = (unsigned char) min(col.R*255, 255);
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3+1] = (unsigned char) min(col.G*255, 255);
 			((unsigned char*)im->rgbdata)[(j*sx + i)*3+2] = (unsigned char) min(col.B*255, 255);
-		//}free(ray);
+		//}
+			free(ray);
 			free(d);
 			free(pc);
 	  } // end for i

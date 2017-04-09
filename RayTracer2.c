@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
 	 struct ray3D *ray;		// Structure to keep the ray from e to a pixel
 	 struct colourRGB col;		// Return colour for raytraced pixels
 	 struct colourRGB background;   // Background colour
-	 		struct colourRGB total_col;	
+	 struct colourRGB total_col;	
 	 int i,j;			// Counters for pixel coordinates
 	 unsigned char *rgbIm;
 		int total = 0, total2 = 0;

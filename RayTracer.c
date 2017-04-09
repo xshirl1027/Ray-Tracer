@@ -219,6 +219,7 @@ if(obj->intersect == planeIntersect){
  free(pl_vector);
 }
 
+
 void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct object3D **obj, struct point3D *p, struct point3D *n, double *a, double *b)
 {
  // Find the closest intersection between the ray and any objects in the scene.
