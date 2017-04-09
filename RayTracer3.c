@@ -30,6 +30,7 @@ int MAX_DEPTH;
 int object_list_size = 0;
 const char *plane_texture = "grid.ppm";
 const char *sky_environment = "sky.ppm";
+struct image *img;
 
 
 void buildScene(void)
@@ -325,7 +326,6 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 	 struct point3D p, tp;	// Intersection point
 	 struct point3D n, tn;	// Normal at intersection
 	 struct colourRGB I;	// Colour returned by shading function
-	 struct image *img = readPPMimage(sky_environment);
  	 int index;
 
 
@@ -423,8 +423,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 
 
 	 }	
-	free(img->rgbdata);
-	free(img);
+	
  ///////////////////////////////////////////////////////
  // TO DO: Complete this function. Refer to the notes
  // if you are unsure what to do here.
@@ -495,6 +494,8 @@ int main(int argc, char *argv[])
 	 //        for Assignment 4 you need to create your own
 	 //        *interesting* scene.
 	 ///////////////////////////////////////////////////
+	 img = readPPMimage(sky_environment);
+	 
 	 buildScene();		// Create a scene. This defines all the
 				// objects in the world of the raytracer
 
@@ -657,6 +658,9 @@ int main(int argc, char *argv[])
 
 	 // Output rendered image
 	 imageOutput(im,output_name);
+
+	 free(img->rgbdata);
+	 free(img);
 
 	 // Exit section. Clean up and return.
 	  cleanup(object_list,light_list);		// Object and light lists

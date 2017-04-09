@@ -97,8 +97,8 @@ void buildScene(void)
 
  o=newCylinder(.05,.95,.95,.75,.75,.95,.55,1,1,35);
  Scale(o,.5,2.0,1.0);
- RotateZ(o,PI/1.5);
- Translate(o,1.75,1.25,5.0);
+ // RotateZ(o,PI/1.5);
+ // Translate(o,1.75,1.25,5.0);
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
@@ -259,6 +259,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 	}  
    if(isShadowray == 0){
   		while(curr_obj != NULL){ //comment out loop, just get just plane to render
+				// printf("R: %f G: %f B: %f\n", curr_obj->col.R,curr_obj->col.G,curr_obj->col.B);
 				curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
 				if(lam>0 && obj!=NULL){
 					//printf("normal %f %f %f\n", tn->px, tn->py, tn->pz);
@@ -620,7 +621,7 @@ int main(int argc, char *argv[])
 	 imageOutput(im,output_name);
 
 	 // Exit section. Clean up and return.
-	  cleanup(object_list,light_list);		// Object and light lists
+	  // cleanup(object_list,light_list);		// Object and light lists
 	  deleteImage(im);				// Rendered image
 	 free(cam);					// camera view
 	 exit(0);

@@ -359,12 +359,12 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  // coordinates. Your code should use bi-linear
  // interpolation to obtain the texture colour.
  //////////////////////////////////////////////////
-  // printf("a: %f b: %f\n", a, b);
+  printf("a: %f b: %f\n", a, b);
  int x, y, u, v;
  double up, vp;
  double Ruv, Guv, Buv, Rup, Gup, Bup, Rrt, Grt, Brt, Racr, Gacr, Bacr;
 
-
+ // printf("%f\n");
  x = img->sx;
  y = img->sy;
  u = floor(x*a);
