@@ -231,7 +231,103 @@ void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lam
  // TO DO: Complete this function.
  /////////////////////////////////
 //src = https://www.cl.cam.ac.uk/teaching/1999/AGraphHCI/SMAG/node2.html
+//http://gamedev.stackexchange.com/questions/114412/how-to-get-uv-coordinates-for-sphere-cylindrical-projection          
 
+  struct ray3D *model_ray = (struct ray3D *) malloc(sizeof(struct ray3D));
+  memcpy(model_ray, ray, sizeof(ray3D));
+  // transforming ray from world to model
+  //rayTransform(ray, model_ray, sphere);
+  matVecMult(cylinder->Tinv, &(model_ray->p0));
+  matVecMult(cylinder->Tinv, &(model_ray->d));
+  // getting coefficiennormalTransform(n, transformed_n, plane); ts of sphere equation, i.e. A.t^2 + B.t + C - R^2 = 0 :
+  // A = d.d, where d is the direction vector of ray in model space
+  double A = (model_ray->d.px)*(model_ray->d.py);
+  // B = 2d.(e-c) = 2d.e, where c is the origin of sphere & e is the ray origin, in model space
+  // Note: origin of sphere in model space, c, is the zero vector & camera camera position
+  double B = 2*((model_ray->d.px)*(model_ray->p0.px)+(model_ray->p0.py)*(model_ray->d.py));
+  // C = (e-c).(e-c) - R^2 = (e).(e) - 1, where R is the radius of the sphere in model space
+  // Note: R = 1 in model space
+  double C = (model_ray->p0.px)*(model_ray->p0.px)+(model_ray->p0.py)*(model_ray->p0.py) - 1;
+
+  double delta = B*B - A*C;
+
+  if(delta==0){ //only 1 intersection
+    *lambda = -B/(2*A);
+  }
+  else if(delta!=0){ //2 intersections, determine the closest 1
+    double lambda1 = (-B + sqrt(delta))/(2*A);
+    double lambda2 = (-B - sqrt(delta))/(2*A);
+    if(lambda1<= 0 && lambda2 <=0) {
+      *lambda = 0;
+    }else {
+      if(lambda1<lambda2){
+        *lambda = lambda1;
+      }else{
+        *lambda = lambda2;
+      }
+    }
+  }
+  else{
+    //no intersection
+    *lambda = 0;
+  }
+  if(lambda>0){
+    double Tinv_trans[4][4];
+    p->px = model_ray->p0.px + *lambda*model_ray->d.px;
+    p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
+    p->py = model_ray->p0.py + *lambda*model_ray->d.py;
+    p->pw = 1;
+
+    n->px = p->px;
+    n->py = p->py;
+    n->pz = 0;
+    n->pw = 0;
+    normalize(n);
+
+    struct point3D *normal;
+    struct point3D *top_circle;
+    if (p->pz >0.5){
+      normal = newPoint(0,0,1);
+
+      if (dot(&model_ray->d, normal)){
+        *lambda = 0;
+      }
+      top_circle = newPoint(0,0,0.5);
+      subVectors(&model_ray->p0,top_circle);
+      *lambda = dot(normal,top_circle)/dot(&model_ray->d,normal);
+
+      if ((p->px)*(p->px)+(p->py)*(p->py))
+        *lambda = 0;
+    } 
+    else if(p->pz < -0.5){
+      normal = newPoint(0,0,-1);
+
+      if (dot(&model_ray->d, normal)){
+        *lambda = 0;
+      }
+      top_circle = newPoint(0,0,-0.5);
+      subVectors(&model_ray->p0,top_circle);
+      *lambda = dot(normal,top_circle)/dot(&model_ray->d,normal);
+
+      if ((p->px)*(p->px)+(p->py)*(p->py))
+        *lambda = 0;
+    }
+    
+
+    //setting a and b
+    *a = atan2(n->px,n->pz) + 0.5;
+    *b = n->py/2 + 0.5;
+
+    //transforming intersection point from model to world
+    matVecMult(cylinder->T, p);
+    transpose(cylinder->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
+    matVecMult(Tinv_trans, n); //transforming n from model to world
+    normalize(n);
+
+    free(top_circle);
+    free(normal);
+  }
+  free(model_ray);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -273,8 +369,8 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
   { 
     //finding point of intersection
     //model_ray->rayPos(model_ray, *lambda, p); 
-    	p->px = model_ray->p0.px + (*lambda) * (model_ray->d.px);
-    	p->py = model_ray->p0.py + (*lambda) * (model_ray->d.py);
+    p->px = model_ray->p0.px + (*lambda) * (model_ray->d.px);
+    p->py = model_ray->p0.py + (*lambda) * (model_ray->d.py);
 		p->pz = model_ray->p0.pz + (*lambda) * (model_ray->d.pz);
  		p->pw = 1;
     //checking if point within bound & transforming from model space to world space
@@ -312,7 +408,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
 	memcpy(model_ray, ray, sizeof(ray3D));
   // transforming ray from world to model
   //rayTransform(ray, model_ray, sphere);
-  	matVecMult(sphere->Tinv, &(model_ray->p0));
+  matVecMult(sphere->Tinv, &(model_ray->p0));
 	matVecMult(sphere->Tinv, &(model_ray->d));
   // getting coefficiennormalTransform(n, transformed_n, plane); ts of sphere equation, i.e. A.t^2 + B.t + C - R^2 = 0 :
   // A = d.d, where d is the direction vector of ray in model space
@@ -324,7 +420,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   // Note: R = 1 in model space
   double C = dot(&(model_ray->p0), &(model_ray->p0)) - 1;
   
-  struct point3D * transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
+  // struct point3D * transformed_n =(struct point3D *)malloc(sizeof(struct point3D));
   // delta is the discriminant in the quadratic equation, i.e. b^2-4ac
 	double delta = B*B - 4*A*C;
 	if(delta==0){ //only 1 intersection
@@ -350,12 +446,17 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
 	if(lambda>0){
 		double Tinv_trans[4][4];
 	 	p->px = model_ray->p0.px + *lambda*model_ray->d.px;
-    	p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
-    	p->py = model_ray->p0.py + *lambda*model_ray->d.py;
+    p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
+    p->py = model_ray->p0.py + *lambda*model_ray->d.py;
  	 	p->pw = 1;
  	 	memcpy(n, p, sizeof(point3D));
  	 	normalize(n);
  	 	n->pw=0;
+
+    //setting a and b
+    *a = n->px/2 + 0.5;
+    *b = n->py/2 + 0.5;
+
  	 	//transforming intersection point from model to world
  	 	matVecMult(sphere->T, p);
  	 	transpose(sphere->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
@@ -363,7 +464,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  	 	normalize(n);
 	}
   free(model_ray);
-  free(transformed_n);
+  // free(transformed_n);
 }
 
 
