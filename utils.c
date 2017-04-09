@@ -185,6 +185,45 @@ struct object3D *newSphere(double ra, double rd, double rs, double rg, double r,
  }
  return(sphere);
 }
+struct object3D *newcylinder(double ra, double rd, double rs, double rg, double r, double g, double b, double alpha, double r_index, double shiny)
+{
+ // Intialize a new cylinder with the specified parameters:
+ // ra, rd, rs, rg - Albedos for the components of the Phong model
+ // r, g, b, - Colour for this plane
+ // alpha - Transparency, must be set to 1 unless you are doing refraction
+ // r_index - Refraction index if you are doing refraction.
+ // shiny -Exponent for the specular component of the Phong model
+ //
+ // This is assumed to represent a unit cylinder centered at the origin.
+ //
+
+ struct object3D *cylinder=(struct object3D *)calloc(1,sizeof(struct object3D));
+
+ if (!cylinder) fprintf(stderr,"Unable to allocate new cylinder, out of memory!\n");
+ else
+ {
+  cylinder->alb.ra=ra;
+  cylinder->alb.rd=rd;
+  cylinder->alb.rs=rs;
+  cylinder->alb.rg=rg;
+  cylinder->col.R=r;
+  cylinder->col.G=g;
+  cylinder->col.B=b;
+  cylinder->alpha=alpha;
+  cylinder->r_index=r_index;
+  cylinder->shinyness=shiny;
+  cylinder->intersect=&cylinderIntersect;
+  cylinder->texImg=NULL;
+  memcpy(&cylinder->T[0][0],&eye4x4[0][0],16*sizeof(double));
+  memcpy(&cylinder->Tinv[0][0],&eye4x4[0][0],16*sizeof(double));
+  cylinder->textureMap=&texMap;
+  cylinder->frontAndBack=0;
+  cylinder->isLightSource=0;
+ }
+ return(cylinder);
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // TO DO:
@@ -316,6 +355,10 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
 	}
   free(model_ray);
   free(transformed_n);
+}
+
+void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b){
+
 }
 
 void loadTexture(struct object3D *o, const char *filename)
