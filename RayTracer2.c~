@@ -80,11 +80,22 @@ void buildScene(void)
  //RotateZ(o,PI/1.20);
  RotateX(o,PI/2.25);
  Translate(o,0,-3,10);
+  o->isLightSource=0;
  invert(&o->T[0][0],&o->Tinv[0][0]);		// Very important! compute
 						// and store the inverse
 						// transform for this object!
 
  insertObject (o,&object_list);			// Insert into object list
+ object_list_size += 1;
+
+ o=newPlane(.05,.75,.05,.05,.95,.95,.45,1,1,2);//this is the light source
+ Scale(o,0.25,0.25,0.25);								// Do a few transforms...
+ //RotateZ(o,PI/1.20);
+ RotateX(o,PI/2.25);
+ Translate(o,0,1.7,-1);
+ o->isLightSource=1;
+ invert(&o->T[0][0],&o->Tinv[0][0]);
+ insertObject(o,&object_list);
  object_list_size += 1;
 
  // Let's add a couple spheres
@@ -96,16 +107,16 @@ void buildScene(void)
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
- 
- o=newPlane(.05,.75,.05,.05,.95,.95,.45,1,1,2);//this is the light source
- Scale(o,0.25,0.25,0.25);								// Do a few transforms...
- //RotateZ(o,PI/1.20);
- RotateX(o,PI/2.25);
- Translate(o,0,1.7,-1);
- o->isLightSource=1;
+
+ o=newSphere(.05,.95,.35,.35,1,.25,.25,1,1,35);
+ Scale(o,0.6,0.6,0.6);
+ Translate(o,-1.45,1.1,3.5);
+ o->isLightSource=0;
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
+ 
+
 
  o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,35);
  Scale(o,.5,2.0,1.0);
@@ -116,10 +127,10 @@ void buildScene(void)
  insertObject(o,&object_list);
  object_list_size += 1;
  
-o=newCylinder(.05,.95,.95,.75,.75,.95,.55,1,1,35);
- //Scale(o,1,2.0,1.0);
- //RotateZ(o,PI/1.5);
- //Translate(o,1.75,1.25,5.0);
+ o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,35);
+ Scale(o,0.6,0.6,0.6);
+ RotateZ(o,PI/1.5);
+ Translate(o,-1.45,1.1,3.5);
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
@@ -204,7 +215,9 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  struct point3D *pl_vector = (struct point3D*)malloc(sizeof(struct point3D));
  struct pointLS curr_light = *light_list;
  double amb, dif, spc, rdmax, spc_max;
- double dot_prod =0;
+ double dot_prod = 0;
+ double gloss_fac = 0.1;
+ int gloss_rays = 9;
   
  memcpy(pl_vector, &(curr_light.p0),sizeof(struct point3D)); // index through light list later!!!
  memcpy(cam_dir, &(ray->p0), sizeof(struct point3D)); 
@@ -226,13 +239,13 @@ void rtShade(struct object3D *obj, struct point3D *p, struct point3D *n, struct 
  refl_lv->py = -pl_vector->py + (2* t->py); //translate up 2t
  refl_lv->pz = -pl_vector->pz + (2* t->pz);
  refl_lv->pw = 0;
+ 
  int py = p->py;
-if(obj->intersect == planeIntersect){
-//printf("p %f %f %f\n", p->px, p->py, p->pz); 
-					p->py = 0;	
-}
- //normalize(refl_lv);
- //normalize(n);
+ //if(obj->intersect == planeIntersect){
+//		p->py = 0;	
+ //}
+ normalize(refl_lv);
+ normalize(n);
  
  amb = (obj->alb.ra); //remove +0.2 later, just want to see ambient 
  rdmax = max(0,dot(pl_vector, n));
@@ -312,7 +325,7 @@ void findFirstHit(struct ray3D *ray, double *lambda, struct object3D *Os, struct
 		while(curr_obj != NULL){ //comment out loop, just get just plane to render
   			if(curr_obj!=Os){ 
 				curr_obj->intersect(curr_obj, ray, &lam, tp, tn, a, b);
-				if(lam>0){
+				if(lam>0 && curr_obj->isLightSource!=1){
 					*lambda = lam;
 				}
 	 		}else{
@@ -397,6 +410,7 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 					//printf("it never gets here\n");
 				}
 				curr_light = curr_light->next;
+				free(lightray);
 			}
 			col->R = total.R/light_list_size;
 			col->G = total.G/light_list_size;
@@ -627,6 +641,7 @@ int main(int argc, char *argv[])
 		double starty = (j+0.5)*dv;
 		int x,y;
 		if(antialiasing!=0)antialiasing = antialiasing/antialiasing;
+		
 		for(x=0; x<(sample_d-1)*antialiasing+1; x++){
 			for(y=0; y<(sample_d-1)*antialiasing+1; y++){
 				double r = (double)rand() / (double)RAND_MAX ; //generate random double (0-1)
@@ -639,7 +654,7 @@ int main(int argc, char *argv[])
 				memcpy(d, pc, sizeof(struct point3D));
 				subVectors(origin, d);
 				normalize(d);
-				//printf("subpixel d %f %f %f\n", d->px, d->py, d->pz);
+				//printf("subpixel d %f %f %f\n", dhttps://www.facebook.com/->px, d->py, d->pz);
 				d->pw = 0;
 				//ray = newRay(origin, d);	
 				ray->p0 = *origin;
@@ -666,6 +681,7 @@ int main(int argc, char *argv[])
 		//}
 			free(d);
 			free(pc);
+			free(origin);
 	  } // end for i
 	 } // end for j
 	printf("pixel %d pixel 2 %d\n",total, total2);

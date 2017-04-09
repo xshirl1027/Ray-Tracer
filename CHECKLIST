@@ -4,7 +4,7 @@ Checklist for Assignment 3
 
 Name: Shirley (Zhaorong) Xia & Vrishti Dutta
 
-Student ID: __________ & 999864099
+Student ID: 998952316 & 999864099
 
 -----------------------------------------------------------------------------------------
 
@@ -52,40 +52,40 @@ B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FUL
    YOUR PARTIAL IMPLEMENTATION, DETAILED COMMENTS IN YOUR CODE, ETC) THE MORE LIKELY IT IS 
    WE WILL BE ABLE TO MAKE AN ACCURATE ASSESSMENT
 
-				Completed   Partial   Not done   Mark
-_x_ [10 marks]  Ray Casting
+						Completed   Partial   Not done   Mark
+_x_ [10 marks]  Ray Casting				X
 
-_x_ [15 marks]  Intersection	
+_x_ [15 marks]  Intersection				X
             for spheres
 
-_x_ [15 marks]  Intersection
+_x_ [15 marks]  Intersection				X
 	    for square
 
-_x_ [15 marks]  Normal transforms
+_x_ [15 marks]  Normal transforms			X
 
-_x_ [15 marks]  Local Phong
+_x_ [15 marks]  Local Phong				X
 
-_x_ [10 marks]  Shadows
+_x_ [10 marks]  Shadows					X
 
-_x_ [15 marks]  Global reflection
+_x_ [15 marks]  Global reflection			X
 
-_x_ [5 marks]   Report
+_x_ [5 marks]   Report					X
+		
+_x_ [15 marks]	Anti-aliasing				X
 
-_x_ []		Anti-aliasing
+_x_ [20 marks]	Area light sources			X
 
-_x_ []		Area light sources
-
-_x_ []		Neat scene
+_x_ [25 marks]	Neat scene				X
 
 Advanced techniques
 
-_x_   		Handling non-trivial compound objects
+_x_   		Handling non-trivial compound objects	X
 
-_x_   		Texture mapping
+_x_   		Texture mapping				X
 
-_x_   		Environment mapping
+_x_   		Environment mapping			X
 
-_x_   		Multi-threading
+_x_   		Multi-threading					X
 
 Total for A3/4:							
 
