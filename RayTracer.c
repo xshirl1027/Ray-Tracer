@@ -97,8 +97,8 @@ void buildScene(void)
 
  o=newCylinder(.05,.95,.95,.75,.75,.95,.55,1,1,35);
  Scale(o,.5,2.0,1.0);
- // RotateZ(o,PI/1.5);
- // Translate(o,1.75,1.25,5.0);
+ RotateZ(o,PI/1.5);
+ Translate(o,1.75,1.25,5.0);
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
