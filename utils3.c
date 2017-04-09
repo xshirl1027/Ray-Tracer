@@ -237,9 +237,7 @@ void planeIntersect(struct object3D *plane, struct ray3D *ray, double *lambda, s
 
       (*a) = (0.5)*(p->px + 1);
       (*b) = (0.5)*(p->py + 1);
-      // if (0 <=p->px && p->px<= 1 && -1 <=p->py && p->py <=0)
-      // printf("x: %f y: %f z: %f\n", p->px, p->py, p->pz);
-      // printf("a: %f b: %f\n", *a, *b);
+
       matVecMult(plane->T, p); //converting p from model to world
   		n->px = 0;      
   		n->py = 0;
@@ -307,8 +305,8 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
 	if(lambda>0){
 		double Tinv_trans[4][4];
 	 	p->px = model_ray->p0.px + *lambda*model_ray->d.px;
-    	p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
-    	p->py = model_ray->p0.py + *lambda*model_ray->d.py;
+    p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
+    p->py = model_ray->p0.py + *lambda*model_ray->d.py;
  	 	p->pw = 1;
  	 	memcpy(n, p, sizeof(point3D));
  	 	normalize(n);
@@ -318,6 +316,10 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
  	 	transpose(sphere->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
  		matVecMult(Tinv_trans, n); //transforming n from model to world
  	 	normalize(n);
+
+    //setting a and b
+    *a = n->px/2 + 0.5;
+    *b = n->py/2 + 0.5;
 	}
 
 }
@@ -359,16 +361,14 @@ void texMap(struct image *img, double a, double b, double *R, double *G, double 
  // coordinates. Your code should use bi-linear
  // interpolation to obtain the texture colour.
  //////////////////////////////////////////////////
-  printf("a: %f b: %f\n", a, b);
  int x, y, u, v;
  double up, vp;
  double Ruv, Guv, Buv, Rup, Gup, Bup, Rrt, Grt, Brt, Racr, Gacr, Bacr;
 
- // printf("%f\n");
  x = img->sx;
  y = img->sy;
- u = floor(x*a);
- v = floor(y*b);
+ u = (floor(x*a) == x)? x-1 : floor(x*a);
+ v = (floor(y*b) == y)? y-1 : floor(y*b);
  
  Ruv = ((double *)img->rgbdata)[(u*x + v)*3];
  Guv = ((double *)img->rgbdata)[(u*x + v)*3+1];

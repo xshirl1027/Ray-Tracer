@@ -28,9 +28,14 @@ struct object3D *object_list;
 struct pointLS *light_list;
 int MAX_DEPTH;
 int object_list_size = 0;
-const char *plane_texture = "grid.ppm";
-const char *sky_environment = "sky.ppm";
-struct image *img;
+const char *flames = "btex-flames.ppm";
+const char *galaxy = "btex-galaxy.ppm";
+const char *fire = "btex-firepattern.ppm";
+const char *snowflakes = "btex-snowflakes.ppm";
+const char *bfire = "btex-blue_fire.ppm";
+
+const char *environment = "xmas.ppm";
+struct image *environment_map[5];
 
 
 void buildScene(void)
@@ -92,17 +97,54 @@ void buildScene(void)
 
  // Let's add a couple spheres
  o=newSphere(.05,.95,.35,.35,1,.25,.25,1,1,35);
- Scale(o,.75,.5,1.5);
+ // Scale(o,.75,.5,1.5);
  RotateY(o,PI/2);
- Translate(o,-1.45,1.1,3.5);
+ Translate(o,-1.45,5.1,3.5);
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
 
  o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,35);
- Scale(o,.5,2.0,1.0);
+ o->texImg = readPPMimage(flames);
+ // Scale(o,.5,2.0,1.0);
  RotateZ(o,PI/1.5);
- Translate(o,1.75,1.25,5.0);
+ Translate(o,1.75,3.25,5.0);
+ invert(&o->T[0][0],&o->Tinv[0][0]);
+ insertObject(o,&object_list);
+ object_list_size += 1;
+
+ o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,35);
+ o->texImg = readPPMimage(fire);
+ // Scale(o,.5,2.0,1.0);
+ RotateZ(o,PI/1.5);
+ Translate(o,3.75,3.25,5.0);
+ invert(&o->T[0][0],&o->Tinv[0][0]);
+ insertObject(o,&object_list);
+ object_list_size += 1;
+
+ o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,35);
+ o->texImg = readPPMimage(bfire);
+ // Scale(o,.5,2.0,1.0);
+ RotateZ(o,PI/1.5);
+ Translate(o,-1.75,3.25,5.0);
+ invert(&o->T[0][0],&o->Tinv[0][0]);
+ insertObject(o,&object_list);
+ object_list_size += 1;
+
+ o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,35);
+ o->texImg = readPPMimage(snowflakes);
+ // Scale(o,.5,2.0,1.0);
+ RotateZ(o,PI/1.5);
+ Translate(o,1.75,3.25,0);
+ invert(&o->T[0][0],&o->Tinv[0][0]);
+ insertObject(o,&object_list);
+ object_list_size += 1;
+
+ o=newSphere(.05,.95,.95,.75,.75,.95,.55,1,1,35);
+ o->texImg = readPPMimage(galaxy);
+ // Scale(o,.5,2.0,1.0);
+ RotateZ(o,PI/1.5);
+ Translate(o,1.75,3.25,5.0);
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
@@ -414,10 +456,8 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 			col->B = 0;
 			// printf("x: %f y: %f z: %f\n", ray->d.px, ray->d.py, ray->d.pz);
 			convert_xyz_to_cube_uv(ray->d.px, ray->d.py, ray->d.pz, &index, &a, &b);
-			// printf("a: %f b: %f\n", a, b);
-						
-			texMap(img, a, b, &col->R, &col->G, &col->B);
-			printf("R: %f G: %f B: %f\n",  col->R, col->G, col->B);
+
+			texMap(environment_map[index], a, b, &col->R, &col->G, &col->B);
 			
 		}
 
@@ -494,7 +534,18 @@ int main(int argc, char *argv[])
 	 //        for Assignment 4 you need to create your own
 	 //        *interesting* scene.
 	 ///////////////////////////////////////////////////
-	 img = readPPMimage(sky_environment);
+	 //front == index 0
+	 environment_map[0] = readPPMimage("2.ppm");
+	 //back == index 1
+	 environment_map[1] = readPPMimage("1.ppm");
+	 //up == index 2
+	 environment_map[2] = readPPMimage("skyview.ppm");
+	 //down == index 3
+	 environment_map[3] = readPPMimage("groundview.ppm");
+	 //back == index 4
+	 environment_map[4] = readPPMimage("1.ppm");
+	 //right == index 5
+	 environment_map[5] = readPPMimage("3.ppm");
 	 
 	 buildScene();		// Create a scene. This defines all the
 				// objects in the world of the raytracer
@@ -658,10 +709,11 @@ int main(int argc, char *argv[])
 
 	 // Output rendered image
 	 imageOutput(im,output_name);
-
-	 free(img->rgbdata);
-	 free(img);
-
+	 int ind = 0;
+	 for(ind = 0; ind < 6; i++){
+	 	//free(environment_map[ind]->rgbdata);
+	 	free(environment_map[ind]);
+	 }
 	 // Exit section. Clean up and return.
 	  cleanup(object_list,light_list);		// Object and light lists
 	  deleteImage(im);				// Rendered image
