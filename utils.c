@@ -239,15 +239,15 @@ void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lam
   struct ray3D *model_ray = (struct ray3D *) malloc(sizeof(struct ray3D));
   memcpy(model_ray, ray, sizeof(ray3D));
   
-  matVecMult(cylinder->Tinv, &(model_ray->p0));
-  matVecMult(cylinder->Tinv, &(model_ray->d));
+  //matVecMult(cylinder->Tinv, &(model_ray->p0));
+  //matVecMult(cylinder->Tinv, &(model_ray->d));
   
   // getting coefficients
-  double A = (model_ray->d.px)*(model_ray->d.pz);
-  double B = 2*((model_ray->d.px)*(model_ray->p0.px)+(model_ray->p0.pz)*(model_ray->d.pz));
+  double A = pow(model_ray->d.px,2) + pow(model_ray->d.pz,2);
+  double B = 2*((model_ray->d.px)*(model_ray->p0.px)+2*(model_ray->p0.pz)*(model_ray->d.pz));
   double C = (model_ray->p0.px)*(model_ray->p0.px)+(model_ray->p0.pz)*(model_ray->p0.pz) - 1;
 
-  double delta = B*B - A*C;
+  double delta = B*B - 4*A*C;
   
   if(delta==0){ //only 1 intersection
     *lambda = -B/(2*A);
@@ -267,26 +267,34 @@ void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lam
   }
   if(*lambda>0){
 
-    y0 = model_ray->p0.pz + lambda1*model_ray->d.pz;
-    y1 = model_ray->p0.pz + lambda2*model_ray->d.pz;
+    y0 = model_ray->p0.py + lambda1*model_ray->d.py;
+    y1 = model_ray->p0.py + lambda2*model_ray->d.py;
 
     double Tinv_trans[4][4]; 
     
     if (y0 < -1){
 
-      if (y1 < -1) *lambda = 0;
+      if (y1 < -1){
+      
+       *lambda = 0;
+       return;
+    }
       else{
         *lambda = lambda1 + (lambda2-lambda1) * (y0+1) / (y0-y1);
-
+			if(*lambda <= 0){
+			 *lambda=0;
+			 return;
+			}
         n->px = 0;
         n->pz = 0;
         n->py = -1;
         n->pw = 0;
-        normalize(n); 
       }
-    } 
-    else if(y0 >= -1 && y0 <= 1){
-      if (lambda1 <= 0) *lambda = 0;
+    }else if(y0 >= -1 && y0 <= 1){
+      if (lambda1 <= 0){
+      	 *lambda = 0;
+      	 return;
+      }
 
       else{
         *lambda = lambda1;
@@ -299,16 +307,24 @@ void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lam
       }
     } else {
 
-      if (y1 > 1) *lambda = 0;
-      else{
-        *lambda = lambda1 + (lambda2-lambda1) * (y0-1) / (y0-y1);
-
-        n->px = 0;
+      if (y0 > 1)  
+      {
+      	if(y1>1){
+      	*lambda = 0;
+			return;      	
+      	}else{
+      		*lambda = lambda1 + (lambda2 - lambda1)*(y0 -1)/(y0 - y1);
+				if (*lambda <= 0) 
+				{
+	  			*lambda = 0;
+	  			return;
+				}
+				        n->px = 0;
         n->pz = 0;
         n->py = 1;
         n->pw = 0;
-        normalize(n); 
-      }
+      	}
+   	}
     }
     p->px = model_ray->p0.px + *lambda*model_ray->d.px;
     p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
@@ -321,9 +337,9 @@ void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lam
     *b = n->py/2 + 0.5;
 
     // transforming intersection point from model to world
-    matVecMult(cylinder->T, p);
-    transpose(cylinder->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
-    matVecMult(Tinv_trans, n); //transforming n from model to world
+    //matVecMult(cylinder->T, p);
+    //transpose(cylinder->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
+    //matVecMult(Tinv_trans, n); //transforming n from model to world
     normalize(n);
        
   }
