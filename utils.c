@@ -185,7 +185,7 @@ struct object3D *newSphere(double ra, double rd, double rs, double rg, double r,
  }
  return(sphere);
 }
-struct object3D *newcylinder(double ra, double rd, double rs, double rg, double r, double g, double b, double alpha, double r_index, double shiny)
+struct object3D *newCylinder(double ra, double rd, double rs, double rg, double r, double g, double b, double alpha, double r_index, double shiny)
 {
  // Intialize a new cylinder with the specified parameters:
  // ra, rd, rs, rg - Albedos for the components of the Phong model
@@ -223,7 +223,16 @@ struct object3D *newcylinder(double ra, double rd, double rs, double rg, double 
  return(cylinder);
 }
 
+void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b){
+ // Computes and returns the value of 'lambda' at the intersection
+ // between the specified ray and the specified canonical cylinder.
 
+ /////////////////////////////////
+ // TO DO: Complete this function.
+ /////////////////////////////////
+//src = https://www.cl.cam.ac.uk/teaching/1999/AGraphHCI/SMAG/node2.html
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // TO DO:
@@ -357,9 +366,7 @@ void sphereIntersect(struct object3D *sphere, struct ray3D *ray, double *lambda,
   free(transformed_n);
 }
 
-void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lambda, struct point3D *p, struct point3D *n, double *a, double *b){
 
-}
 
 void loadTexture(struct object3D *o, const char *filename)
 {

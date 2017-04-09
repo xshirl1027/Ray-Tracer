@@ -92,19 +92,17 @@ void buildScene(void)
  Scale(o,.75,.5,1.5);
  RotateY(o,PI/2);
  Translate(o,-1.45,1.1,3.5);
+  o->isLightSource=0;
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
  
- o=newPlane(.05,.75,.05,.05,.95,.95,.45,1,1,2);	// Note the plane is highly-reflective (rs=rg=.75) so we
-						// should see some reflections if all is done properly.
-						// Colour is close to cyan, and currently the plane is
-						// completely opaque (alpha=1). The refraction index is
-						// meaningless since alpha=1
- Scale(o,0.25,0.25,0.25);				// Do a few transforms...
+ o=newPlane(.05,.75,.05,.05,.95,.95,.45,1,1,2);//this is the light source
+ Scale(o,0.25,0.25,0.25);								// Do a few transforms...
  //RotateZ(o,PI/1.20);
  RotateX(o,PI/2.25);
  Translate(o,0,1.7,-1);
+ o->isLightSource=1;
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
@@ -113,9 +111,19 @@ void buildScene(void)
  Scale(o,.5,2.0,1.0);
  RotateZ(o,PI/1.5);
  Translate(o,1.75,1.25,5.0);
+ o->isLightSource=0;
  invert(&o->T[0][0],&o->Tinv[0][0]);
  insertObject(o,&object_list);
  object_list_size += 1;
+ 
+o=newCylinder(.05,.95,.95,.75,.75,.95,.55,1,1,35);
+ //Scale(o,1,2.0,1.0);
+ //RotateZ(o,PI/1.5);
+ //Translate(o,1.75,1.25,5.0);
+ invert(&o->T[0][0],&o->Tinv[0][0]);
+ insertObject(o,&object_list);
+ object_list_size += 1;
+ 
  // Insert a single point light source.
  int lx =10;
  int ly =10;

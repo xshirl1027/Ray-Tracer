@@ -6,22 +6,31 @@ _______________________________________________________________________________
 Process you used to complete the assignment (including organization,
 understanding the starter code, and building a solution):
 
-In order to complete this assignment, we studied the lecture slides, tutorial
-slides and/or researched online materials.
+We started this coding assignment with some basic knowledge of ray tracing from
+attending lectures.
+The implementaion of transformations of coordinate systems consolidated our 
+understanding of lecture materials.
+We resolved the bugs and challenges we encountered by conducting research online,
+going to office hours, and discussing concepts with our fellow classmates.
+We also drew diagrams to visualize our implementations, thus making it easier to 
+break down, implement and debug.
 
-Our first task of rendering a generic image led us learn about geometric 
-intersections, which included understanding the ray trace algorithm, which we
-implemented after that.
+In order to translate our theoretical knowledge to practice, we isolated what we
+thought was the easiest object to render, the plane, and applied the series of
+transformations (camera->world, model->world ...etc) to render it on screen.
+However, this proved to be extremely challenging. Even though our theoretical 
+understanding and mathematical calculations were correct, we couldn't get it to 
+render correctly as shown on the handout. In the end we discovered that a 
+misunderstanding of the alignment of the canonical plane (which lay along the 
+x and y axis, we thought x and z) led us to apply the wrong transformations.
 
-We had to draw multiple diagrams to properly understand projections and 
-coordinate frames in order to correct our rendering.
-
-Lastly, we did all of these simultaneously with implementing the functions.
+After resolving this difficult problem, we moved through the rest of the
+assignment with relative ease.
 
 _______________________________________________________________________________
 Brief description code implemented (including "cruncy" part of the code):
 
-We implemented this assignment in increments. 
+
 First, we tackled the rendering of a general plane object only, whereby 
 we ensured we understood all the functions we were required to write 
 and ensuring we understand all the transformations to render an object.
