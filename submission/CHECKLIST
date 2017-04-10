@@ -1,0 +1,91 @@
+CSC418/2504 - Winter 2017
+Checklist for Assignment 3
+----------------------------------------------------------------------------------
+
+Name: Shirley (Zhaorong) Xia & Vrishti Dutta
+
+Student ID: 998952316 & 999864099
+
+-----------------------------------------------------------------------------------------
+
+A. PLEASE ANSWER THE FOLLOWING QUESTIONS (your assignment will not be graded otherwise!)
+
+1. I verify that I completed this assignment according to the 
+   Academic Honesty policy stated in 
+
+   http://www.cs.brown.edu/~ls/teaching08.html
+
+   _x_Yes   ___No
+
+2. I understand that it is not okay to use code found online and represent it as my own work.
+   Further, I understand that if caught with similarity software, I can be reprimanded by the
+   department and will have to deal with the consequences of this.
+	
+
+   _x_Yes   ___No
+
+   If you have used an external source, see 3 and report it there.
+
+3. I collaborated on this assignment with another student or borrowed code from another
+   source (the penalties/grades will be assessed according to the policy stated in 
+   http://www.cs.brown.edu/~ls/teaching08.html)
+
+   _x_Yes   ___No
+
+
+   If you checked yes, please supply the following
+
+       Student name/Source: https://en.wikipedia.org/wiki/Cube_mapping
+
+       Portion(s) of assignment completed by that student (see checklist below)
+       Function convert_xyz_to_cube_uv in utils.c
+
+
+-----------------------------------------------------------------------------------------
+
+B. PLACE AN (X) IN FRONT OF PORTIONS OF THE ASSIGNMENT THAT YOU COMPLETED IN FULL.
+
+      If a portion of the assignment was not completed fully, please provide 
+   additional information so that we can determine whether or not you are eligible
+   for partial credit. THE MORE INFORMATION YOU SUPPLY (EG. FILE WHICH CONTAINS
+   PARTIAL CODE, FUNCTION NAME, ETC, SUGGESTIONS ON WHERE AND WHAT TO LOOK FOR IN 
+   YOUR PARTIAL IMPLEMENTATION, DETAILED COMMENTS IN YOUR CODE, ETC) THE MORE LIKELY IT IS 
+   WE WILL BE ABLE TO MAKE AN ACCURATE ASSESSMENT
+
+						Completed   Partial   Not done   Mark
+_x_ [10 marks]  Ray Casting				X
+
+_x_ [15 marks]  Intersection				X
+            for spheres
+
+_x_ [15 marks]  Intersection				X
+	    for square
+
+_x_ [15 marks]  Normal transforms			X
+
+_x_ [15 marks]  Local Phong				X
+
+_x_ [10 marks]  Shadows					X
+
+_x_ [15 marks]  Global reflection			X
+
+_x_ [5 marks]   Report					X
+		
+_x_ [15 marks]	Anti-aliasing				X
+
+_x_ [20 marks]	Area light sources			X
+
+_x_ [25 marks]	Neat scene				X
+
+Advanced techniques
+
+__   		Handling non-trivial compound objects		X		
+
+_x_   		Texture mapping				X
+
+_x_   		Environment mapping			X
+
+_x_   		Multi-threading					X
+
+Total for A3/4:							
+
