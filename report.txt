@@ -86,7 +86,8 @@ setupscene:
 	
 
 texture mapping:
-  memcpy(&plane->T[0][0],&eye4x4[0][0],16*sizeof(double));
+  	using the a, b relative coordinates for the image that has to be mapped to,
+  	texmap in utils returns the RGB values of the scenery 
 _______________________________________________________________________________
 Easy and hard parts of the assigment:
 
@@ -147,8 +148,8 @@ Shirley:
 
 
 Vrishti:
--set up RayTracing calls and subsequent helper functions
--wrote planeIntersect
+-set up RayTracing calls and helper functions (i.e findFirstHit, transform functions)
+-wrote planeIntersect, sphereintersect
 -set up rtShade
 -set up the report
 -texture and environment mapping

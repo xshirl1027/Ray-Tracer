@@ -233,117 +233,168 @@ void cylinderIntersect(struct object3D *cylinder, struct ray3D *ray, double *lam
 //src = https://www.cl.cam.ac.uk/teaching/1999/AGraphHCI/SMAG/node2.html
 // http://woo4.me/wootracer/cylinder-intersection/
 // http://gamedev.stackexchange.com/questions/114412/how-to-get-uv-coordinates-for-sphere-cylindrical-projection          
-  double lambda1, lambda2;
-  float y0, y1;
-
+  double Tinv_trans[4][4]; 
+  double lambda1, lambda2, y0, y1;
+  struct point3D *model_normal = (struct point3D *) malloc(sizeof(struct point3D));
   struct ray3D *model_ray = (struct ray3D *) malloc(sizeof(struct ray3D));
   memcpy(model_ray, ray, sizeof(ray3D));
   
-  //matVecMult(cylinder->Tinv, &(model_ray->p0));
-  //matVecMult(cylinder->Tinv, &(model_ray->d));
+  matVecMult(cylinder->Tinv, &(model_ray->p0));
+  matVecMult(cylinder->Tinv, &(model_ray->d));
   
   // getting coefficients
   double A = pow(model_ray->d.px,2) + pow(model_ray->d.pz,2);
   double B = 2*((model_ray->d.px)*(model_ray->p0.px)+2*(model_ray->p0.pz)*(model_ray->d.pz));
   double C = (model_ray->p0.px)*(model_ray->p0.px)+(model_ray->p0.pz)*(model_ray->p0.pz) - 1;
-
+  
   double delta = B*B - 4*A*C;
   
-  if(delta==0){ //only 1 intersection
-    *lambda = -B/(2*A);
+  if (delta < 0){
+    *lambda = 0;
+    free(model_normal);
+    free(model_ray);
+    return;
   }
-  else if(delta!=0){ //2 intersections, determine the closest 1
+  else{
     lambda1 = (-B + sqrt(delta))/(2*A);
     lambda2 = (-B - sqrt(delta))/(2*A);
-    if (lambda1 > lambda2){
+    if (lambda1 > lambda2) {
       lambda1 = lambda1 + lambda2;
       lambda2 = lambda1 - lambda2;
       lambda1 = lambda1 - lambda2;
     }
-  }
-  else{
-    //no intersection
-    *lambda = 0;
-  }
-  if(*lambda>0){
 
-    y0 = model_ray->p0.py + lambda1*model_ray->d.py;
+    y0 = model_ray->p0.py + lambda1*model_ray->d.py; 
     y1 = model_ray->p0.py + lambda2*model_ray->d.py;
 
-    double Tinv_trans[4][4]; 
-    
     if (y0 < -1){
-
-      if (y1 < -1){
-      
-       *lambda = 0;
-       return;
-    }
+      if (y1 < -1) {
+        *lambda = 0;
+        free(model_normal);
+        free(model_ray);
+        return;
+      }
       else{
         *lambda = lambda1 + (lambda2-lambda1) * (y0+1) / (y0-y1);
-			if(*lambda <= 0){
-			 *lambda=0;
-			 return;
-			}
-        n->px = 0;
-        n->pz = 0;
-        n->py = -1;
-        n->pw = 0;
-      }
-    }else if(y0 >= -1 && y0 <= 1){
-      if (lambda1 <= 0){
-      	 *lambda = 0;
-      	 return;
-      }
+  		  if(*lambda <= 0){
+  		    *lambda=0;
+          free(model_normal);
+          free(model_ray);
+          return;
+  		  }
+        model_normal->px =  0;
+        model_normal->py = -1;
+        model_normal->pz =  0;
+        model_normal->pw =  0;
+        //setting a and b
+        *a = atan2(n->px,n->pz) + 0.5;
+        *b = n->py/2 + 0.5;
+        
+        printf("lambda: %f\n", *lambda);
 
+        p->px = model_ray->p0.px + *lambda*model_ray->d.px;
+        p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
+        p->py = model_ray->p0.py + *lambda*model_ray->d.py;
+        p->pw = 1;
+        memcpy(n,model_normal,sizeof(struct point3D));
+
+        // transforming intersection point from model to world
+        matVecMult(cylinder->T, p);
+        transpose(cylinder->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
+        matVecMult(Tinv_trans, n); //transforming n from model to world
+        normalize(n);
+             
+        free(model_normal);
+        free(model_ray);
+        return;
+      }
+    }
+    else if(y0 >= -1 && y0 <= 1) {
+      if (lambda1 <= 0){
+      	*lambda = 0;
+        free(model_normal);
+        free(model_ray);
+        return;
+      }
       else{
         *lambda = lambda1;
 
-        n->px = p->px;
-        n->pz = 0;
-        n->py = p->py;
-        n->pw = 0;
+        model_normal->px = p->px;
+        model_normal->pz = 0;
+        model_normal->py = p->py;
+        model_normal->pw = 0;
         normalize(n); 
-      }
-    } else {
+        //setting a and b
+        *a = atan2(n->px,n->pz) + 0.5;
+        *b = n->py/2 + 0.5;
+        
+        printf("lambda: %f\n", *lambda);
 
+        p->px = model_ray->p0.px + *lambda*model_ray->d.px;
+        p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
+        p->py = model_ray->p0.py + *lambda*model_ray->d.py;
+        p->pw = 1;
+        memcpy(n,model_normal,sizeof(struct point3D));
+
+        // transforming intersection point from model to world
+        matVecMult(cylinder->T, p);
+        transpose(cylinder->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
+        matVecMult(Tinv_trans, n); //transforming n from model to world
+        normalize(n);
+             
+        free(model_normal);
+        free(model_ray);
+        return;
+      }
+    }
+    else {
       if (y0 > 1)  
       {
       	if(y1>1){
-      	*lambda = 0;
-			return;      	
-      	}else{
-      		*lambda = lambda1 + (lambda2 - lambda1)*(y0 -1)/(y0 - y1);
-				if (*lambda <= 0) 
-				{
-	  			*lambda = 0;
-	  			return;
-				}
-				        n->px = 0;
-        n->pz = 0;
-        n->py = 1;
-        n->pw = 0;
+      	  *lambda = 0; 
+          free(model_normal);
+          free(model_ray);
+          return;   	
       	}
-   	}
+        else{
+      		*lambda = lambda1 + (lambda2 - lambda1)*(y0 -1)/(y0 - y1);
+  			  if (*lambda <= 0) 
+  			  {
+    			  *lambda = 0;
+            free(model_normal);
+            free(model_ray);
+            return;
+  			  }
+  			  model_normal->px = 0;
+          model_normal->pz = 0;
+          model_normal->py = 1;
+          model_normal->pw = 0;
+          //setting a and b
+          *a = atan2(n->px,n->pz) + 0.5;
+          *b = n->py/2 + 0.5;
+          
+          printf("lambda: %f\n", *lambda);
+
+          p->px = model_ray->p0.px + *lambda*model_ray->d.px;
+          p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
+          p->py = model_ray->p0.py + *lambda*model_ray->d.py;
+          p->pw = 1;
+          memcpy(n,model_normal,sizeof(struct point3D));
+
+          // transforming intersection point from model to world
+          matVecMult(cylinder->T, p);
+          transpose(cylinder->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
+          matVecMult(Tinv_trans, n); //transforming n from model to world
+          normalize(n);
+               
+          free(model_normal);
+          free(model_ray);
+          return;
+      	}
+   	  }
     }
-    p->px = model_ray->p0.px + *lambda*model_ray->d.px;
-    p->pz = model_ray->p0.pz + *lambda*model_ray->d.pz;
-    p->py = model_ray->p0.py + *lambda*model_ray->d.py;
-    p->pw = 1;
-    
-
-    //setting a and b
-    *a = atan2(n->px,n->pz) + 0.5;
-    *b = n->py/2 + 0.5;
-
-    // transforming intersection point from model to world
-    //matVecMult(cylinder->T, p);
-    //transpose(cylinder->Tinv, Tinv_trans); //finding inverse transpose of model to world matrix
-    //matVecMult(Tinv_trans, n); //transforming n from model to world
-    normalize(n);
-       
   }
-  free(model_ray);
+  
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
