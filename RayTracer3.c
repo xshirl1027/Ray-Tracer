@@ -438,11 +438,11 @@ void rayTrace(struct ray3D *ray, int depth, struct colourRGB *col, struct object
 				struct colourRGB *newcol = (struct colourRGB *) malloc(sizeof(struct colourRGB));
 				depth++;
 				rayTrace(ref_ray, depth, newcol, obj);
-				col->R += 0.75*newcol->R;
+				col->R += 0.33*newcol->R;
 				col->R += min(1,col->R);
-				col->G += 0.75*newcol->G;
+				col->G += 0.33*newcol->G;
 				col->G += min(1,col->G);
-				col->B += 0.75*newcol->B;
+				col->B += 0.33*newcol->B;
 				col->B += min(1,col->B);
 				free(newcol);
 				free(ref_ray);
